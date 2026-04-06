@@ -35,7 +35,7 @@ export const ApodDisplay: React.FC = () => {
               <SettingsMenu />
               <StarMapOverlay isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} />
               <MediaSection apod={apod} />
-              
+
               {/* Subtle loading indicator for background updates (like translations) */}
               {loading && (
                 <div className="absolute top-6 right-20 z-[60]">

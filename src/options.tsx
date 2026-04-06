@@ -13,13 +13,17 @@ const OptionsPage: React.FC = () => {
   useEffect(() => {
     browser.storage.sync
       .get(['settings'])
-      .then((result: { settings?: { nasaApiKey?: string; reducedMotion?: boolean; highContrast?: boolean } }) => {
-        if (result.settings) {
-          setApiKey(result.settings.nasaApiKey || '');
-          setReducedMotion(result.settings.reducedMotion || false);
-          setHighContrast(result.settings.highContrast || false);
-        }
-      });
+      .then(
+        (result: {
+          settings?: { nasaApiKey?: string; reducedMotion?: boolean; highContrast?: boolean };
+        }) => {
+          if (result.settings) {
+            setApiKey(result.settings.nasaApiKey || '');
+            setReducedMotion(result.settings.reducedMotion || false);
+            setHighContrast(result.settings.highContrast || false);
+          }
+        },
+      );
 
     calculateCacheSize();
   }, []);

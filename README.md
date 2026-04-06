@@ -64,6 +64,7 @@ NASA's 30-year archive includes images from the 1990s — sometimes as low as `4
 
 - **Resolution Filtering:** The service worker probes pixel dimensions *before* caching. If an image is too small, it retries for a better one from the random archives.
 - **ORB (Opaque Response Blocking) Bypass:** To ensure images are always available offline, we now store the image **Blobs in IndexedDB** instead of just URLs. This prevents the browser from "forgetting" the image when the network is off.
+- **Premium Curation:** I hand-picked a "Starter Collection" of high-resolution, horizontal galactic images. This ensures the first experience for every new user is visually breathtaking, even before the first background fetch completes.
 
 ### Chapter 6: Rethinking the UI for Intentionality
 
@@ -136,6 +137,7 @@ Preview at `localhost:5173`. The UI will detect it's not in an extension and fal
 
 ### v1.0 — Shipped ✅
 - [x] **Zero Latency Buffer**: 10-image queue pre-refilled in the background.
+- [x] **Curated Galactic Starter Set**: Hand-picked, high-resolution interstellar imagery for the initial experience.
 - [x] **Offline Survival**: Full IndexedDB blob storage for images.
 - [x] **SIMBAD Enrichment**: Identification of celestial object types.
 - [x] **Multi-lingual support**: 11 languages (server-translated).

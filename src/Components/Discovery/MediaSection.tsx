@@ -21,7 +21,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
 
     const loadMedia = async () => {
       setIsReady(false);
-      
+
       if (apod.media_type !== 'image') {
         setImgUrl(apod.url);
         setIsReady(true);
@@ -31,16 +31,16 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
       try {
         // 1. Try to get blob from IndexedDB
         const blob = await getImageBlob(apod.date);
-        
+
         // Safety: ensure blob is not empty (ORB check)
         const isValidBlob = blob && blob.size > 1024;
-        const sourceUrl = isValidBlob ? URL.createObjectURL(blob) : (apod.hdurl || apod.url);
+        const sourceUrl = isValidBlob ? URL.createObjectURL(blob) : apod.hdurl || apod.url;
         if (isValidBlob) objectUrl = sourceUrl;
 
         // 2. Pre-decode the image
         const img = new Image();
         img.src = sourceUrl;
-        
+
         try {
           await img.decode();
           if (!isCancelled) {

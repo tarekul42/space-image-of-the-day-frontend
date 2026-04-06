@@ -3,6 +3,7 @@ import { fetchApod, fetchRandomApod } from './services/apod.service';
 import { enrichData } from './utils/enrichment';
 import { saveImageBlob, clearOldImages } from './utils/storage';
 import { starterApods } from './data/starterApods';
+import { ApodData } from './types/apod';
 
 // ─── Constants ───────────────────────────────────────────────
 const MIN_WIDTH = 1000;
@@ -14,7 +15,9 @@ const PURGE_KEY = 'cache_purge_v2';
 /**
  * Probe the pixel dimensions of an image URL and return the Blob.
  */
-async function getImageData(url: string): Promise<{ width: number; height: number; blob: Blob } | null> {
+async function getImageData(
+  url: string,
+): Promise<{ width: number; height: number; blob: Blob } | null> {
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
@@ -31,10 +34,7 @@ async function getImageData(url: string): Promise<{ width: number; height: numbe
 // ─── Message Handling ────────────────────────────────────────
 
 browser.runtime.onMessage.addListener(
-  (
-    request: unknown,
-    _sender: browser.Runtime.MessageSender,
-  ) => {
+  (request: unknown, _sender: browser.Runtime.MessageSender) => {
     const req = request as { type: string; date?: string; lang?: string; allowLowRes?: boolean };
 
     // Use a pattern that ensures we ALWAYS return a promise or false.
@@ -96,7 +96,7 @@ async function handleClearBuffer(lang?: string, allowLowRes?: boolean) {
 async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
   try {
     const result = await browser.storage.local.get(BUFFER_KEY);
-    const buffer: any[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
+    const buffer: ApodData[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
 
     if (buffer.length > 0) {
       const dataToReturn = buffer.shift();
@@ -109,11 +109,11 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
       // while triggering a refill in the background.
       const fallback = starterApods[Math.floor(Math.random() * starterApods.length)];
       // console.log(`[buffer] Empty! Using fallback: ${fallback.title}`);
-      
+
       setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
       return { data: fallback, fromFallback: true };
     }
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     // Final safety: even if everything fails, return the first starter APOD
     return { data: starterApods[0], fromFallback: true };
   }
@@ -125,10 +125,10 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
  */
 async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
   if (isRefilling) return;
-  
+
   const result = await browser.storage.local.get(BUFFER_KEY);
-  const currentBuffer: any[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
-  
+  const currentBuffer: ApodData[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
+
   if (currentBuffer.length >= BUFFER_LIMIT) {
     // Cleanup blobs we no longer need
     performCleanup(currentBuffer);
@@ -139,11 +139,13 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
   try {
     // console.log(`[buffer] refilling incrementally. Current size: ${currentBuffer.length}`);
     const enriched = await fetchAndValidateRandomApod(lang, allowLowRes);
-    
+
     // Check again to avoid races
     const freshResult = await browser.storage.local.get(BUFFER_KEY);
-    const freshBuffer: any[] = Array.isArray(freshResult[BUFFER_KEY]) ? freshResult[BUFFER_KEY] : [];
-    
+    const freshBuffer: ApodData[] = Array.isArray(freshResult[BUFFER_KEY])
+      ? freshResult[BUFFER_KEY]
+      : [];
+
     if (freshBuffer.length < BUFFER_LIMIT) {
       freshBuffer.push(enriched);
       await browser.storage.local.set({ [BUFFER_KEY]: freshBuffer });
@@ -155,10 +157,10 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
   }
 }
 
-async function performCleanup(buffer: any[]) {
+async function performCleanup(buffer: ApodData[]) {
   try {
     const result = await browser.storage.local.get(null);
-    const bufferedDates = buffer.map((item: any) => item.date);
+    const bufferedDates = buffer.map((item: ApodData) => item.date);
     const today = new Date().toISOString().split('T')[0];
     const cachedDates = Object.keys(result).filter((k) => k !== BUFFER_KEY);
     await clearOldImages([...bufferedDates, ...cachedDates, today]);
@@ -212,11 +214,11 @@ browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install' || details.reason === 'update') {
     // Prime with STARTER DATA for instant first impression
     // console.log('[install] Seeding starter buffer (Nerd-Scale)...');
-    
+
     // We don't fill the random_buffer with ALL 20 to keep it manageable,
     // but we pre-fetch the BLOBS for all 20 so the fallback is instant.
     await browser.storage.local.set({ [BUFFER_KEY]: starterApods.slice(0, 10) });
-    
+
     // Progressively fetch blobs for ALL starter data
     for (const item of starterApods) {
       try {
@@ -226,13 +228,13 @@ browser.runtime.onInstalled.addListener(async (details) => {
           await saveImageBlob(item.date, data.blob);
         }
         // Small delay to be polite
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 500));
       } catch (err) {
         console.error(`[install] Failed to pre-fetch blob:`, err);
       }
     }
   }
-  
+
   // Schedule full refill check
   refillBufferIfNeeded();
 });

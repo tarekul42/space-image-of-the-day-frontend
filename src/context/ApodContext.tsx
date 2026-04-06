@@ -45,8 +45,7 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const BUFFER_KEY = 'random_buffer';
         const result = await browser.storage.local.get(null);
-        
-        const buffer = (result[BUFFER_KEY] as any[]) || [];
+        const buffer = (result[BUFFER_KEY] as ApodData[]) || [];
         if (buffer.length > 0) {
           setApod(buffer[0]);
           return;
@@ -75,16 +74,17 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (language !== prevLanguage.current) {
       prevLanguage.current = language;
       localStorage.setItem('userLang', language);
-      
+
       if (browser.runtime?.id && apod) {
         setLoading(true);
-        browser.runtime
-          .sendMessage({ 
-            type: 'UPDATE_TRANSLATION', 
-            date: apod.date, 
-            lang: language 
-          })
-          .then((res: any) => {
+        (
+          browser.runtime.sendMessage({
+            type: 'UPDATE_TRANSLATION',
+            date: apod.date,
+            lang: language,
+          }) as Promise<{ data?: ApodData; error?: string }>
+        )
+          .then((res) => {
             if (res?.data) setApod(res.data);
           })
           .catch(console.error)
