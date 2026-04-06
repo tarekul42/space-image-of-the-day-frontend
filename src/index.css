@@ -11,7 +11,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   *,
   ::before,
   ::after {
@@ -24,8 +23,6 @@
     transition-delay: 0s !important;
   }
 }
-
-
 
 /* ─── Options Page Styling ────────────────────────────────────── */
 .options-container {
@@ -87,8 +84,8 @@
   font-weight: 600;
 }
 
-input[type="password"],
-input[type="text"] {
+input[type='password'],
+input[type='text'] {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   padding: 12px 16px;

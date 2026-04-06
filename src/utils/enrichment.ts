@@ -1,5 +1,5 @@
-import { ApodData } from '../types/apod';
 import { querySimbad } from '../services/simbad.service';
+import { ApodData } from '../types/apod';
 
 export function extractObjectName(title: string): string {
   const name = title

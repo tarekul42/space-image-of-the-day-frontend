@@ -15,9 +15,7 @@
       "strict_min_version": "142.0"
     }
   },
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "host_permissions": [
     "http://localhost:5000/*",
     "https://api.nasa.gov/*",

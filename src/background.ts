@@ -1,9 +1,9 @@
 import browser from './browser';
-import { fetchApod, fetchRandomApod } from './services/apod.service';
-import { enrichData } from './utils/enrichment';
-import { saveImageBlob, clearOldImages } from './utils/storage';
 import { starterApods } from './data/starterApods';
+import { fetchApod, fetchRandomApod } from './services/apod.service';
 import { ApodData } from './types/apod';
+import { enrichData } from './utils/enrichment';
+import { clearOldImages, saveImageBlob } from './utils/storage';
 
 // ─── Constants ───────────────────────────────────────────────
 const MIN_WIDTH = 1000;

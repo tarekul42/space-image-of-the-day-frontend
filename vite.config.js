@@ -1,9 +1,9 @@
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { fileURLToPath, URL } from 'url';
+import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath, URL } from 'url';
+import { defineConfig, loadEnv } from 'vite';
 
 // ESM-safe __dirname equivalent
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,7 @@ function copyManifest(env) {
         if (env.VITE_API_BASE_URL) {
           const apiUrl = new URL(env.VITE_API_BASE_URL);
           const origin = `${apiUrl.protocol}//${apiUrl.host}/*`;
-          
+
           if (!manifest.host_permissions) manifest.host_permissions = [];
           if (!manifest.host_permissions.includes(origin)) {
             manifest.host_permissions.push(origin);
@@ -55,24 +55,24 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react(), tailwindcss(), copyManifest(env)],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
-  },
-  build: {
-    outDir,
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        newtab: 'index.html',
-        background: 'src/background.ts',
-        options: 'options.html',
-      },
-      output: {
-        entryFileNames: '[name].js',
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
-  },
+    build: {
+      outDir,
+      emptyOutDir: true,
+      rollupOptions: {
+        input: {
+          newtab: 'index.html',
+          background: 'src/background.ts',
+          options: 'options.html',
+        },
+        output: {
+          entryFileNames: '[name].js',
+        },
+      },
+    },
   };
 });
