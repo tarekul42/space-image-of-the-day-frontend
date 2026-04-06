@@ -1,6 +1,12 @@
-# 🌌 Space Image of the Day — Chrome Extension
+# 🌌 Space Image of the Day — Browser Extension
 
 > *A new piece of the cosmos, every time you open a tab.*
+
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg?logo=react)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6-646cff.svg?logo=vite)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8.svg?logo=tailwind-css)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ---
 
@@ -14,302 +20,137 @@ That simple question turned into an engineering project that taught me more abou
 
 ---
 
-## Chapter 1: The Obvious Approach, and Why It Wasn't Good Enough
+### Chapter 1: The Obvious Approach, and Why It Wasn't Good Enough
 
 My first instinct was straightforward: the extension opens → fetch the NASA API → display the image. Simple.
 
-But I immediately hit a problem.
-
-### The CORS Wall
-Chrome extensions run in a very restricted security context. When a React component inside `index.html` tries to call `https://api.nasa.gov` directly, the browser blocks it. This is the [same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) — and it's **not a bug, it's a feature**.
+But I immediately hit a problem: **The CORS Wall.**
+Chrome extensions run in a very restricted security context. When a React component inside `index.html` tries to call `https://api.nasa.gov` directly, the browser blocks it.
 
 I could have added the domain to `host_permissions` in `manifest.json` and been done. But then I thought further: every API call would happen in the UI thread, on every single new tab open. If NASA's API was slow, the user would stare at a loading spinner. If they opened 5 tabs quickly, they'd make 5 redundant API calls. And they'd burn through NASA's `DEMO_KEY` rate limit almost immediately.
 
-That's not a product I'd want to use.
+### Chapter 2: The Service Worker as a Traffic Controller
 
-### The Solution: The Service Worker as a Traffic Controller
+Manifest V3 (the current standard) comes with a `background.ts` — a **Service Worker** that runs independently of the UI. It's the heartbeat of the extension.
 
-Manifest V3 (the current standard for Chrome Extensions) comes with a `background.js` — a **Service Worker** that runs independently of the UI. It's the heartbeat of the extension.
+I moved all data-fetching logic into the service worker:
+1. **React UI** sends a message (`FETCH_APOD`).
+2. **Service Worker** fetches, enriches, and caches the data.
+3. **Storage** stores it in `chrome.storage.local`.
 
-I moved all data-fetching logic into `background.ts`:
-
-```
-React UI  ──sendMessage──►  background.ts  ──fetch──►  Backend API
-                ◄──response──                ◄──json──
-```
-
-The UI never talks to external APIs directly. It sends a message (`FETCH_APOD` or `FETCH_RANDOM`), and the service worker handles everything. This architecture gives me:
-
-- **No CORS issues:** Service workers have their own network context.
-- **Centralized caching:** Data is cached in `chrome.storage.local` at the service worker level — not the component level.
+This architecture gives me:
+- **No CORS/ORB issues:** Service workers have their own network context.
+- **Centralized caching:** Data is cached at the service worker level — not the component level.
 - **Zero redundant calls:** If the data for today is already cached, it's served instantly.
 
----
+### Chapter 3: "What If the Server is Down?"
 
-## Chapter 2: "What If the Server is Down?"
+I built a backend (Node.js/TypeScript with Bun) to proxy NASA API calls and add SIMBAD astronomical enrichment. But I asked myself: *what happens when a user opens a new tab and my server is offline?*
 
-I built a backend (Node.js/TypeScript with Bun) to handle the NASA API calls and add SIMBAD astronomical enrichment. But I asked myself: *what happens when a user opens a new tab and my server is offline?*
+For most web apps, the answer is "show an error." But this is a **new tab replacement**. If it breaks, it kills the user's entire browser workflow. Useability is non-negotiable.
 
-For most web apps, the answer is "show an error." But this is a **new tab replacement**. If it breaks, it kills the user's entire browser workflow.
-
-So I built an offline fallback directly into the service worker:
-
-```typescript
-// background.ts
-async function handleFetchApod(date?: string) {
-  try {
-    const rawData = await fetchApod(date);
-    const enriched = await enrichData(rawData);
-    // Cache the successful result
-    await chrome.storage.local.set({ [today]: enriched });
-    return { data: enriched, fromCache: false };
-  } catch (error) {
-    // Server down? Fall back to the most recent cached image.
-    const allCache = await chrome.storage.local.get(null);
-    const keys = Object.keys(allCache).sort().reverse();
-    if (keys.length > 0) {
-      return { data: allCache[keys[0]], fromCache: true, offline: true };
-    }
-    return { error: errorMessage };
-  }
-}
-```
-
+So I built a **resilient offline fallback**:
 Every successful fetch writes to local storage. On failure, the extension silently serves the most recently cached image. The user still gets their cosmic wallpaper — they just don't know the server had a bad day.
 
----
-
-## Chapter 3: Just Showing a Picture Felt Lazy
+### Chapter 4: Enriching the Discovery
 
 NASA's APOD data includes a title and explanation, but nothing about *what* is actually in the image. I wanted to give users more context — the type of galactic object, additional resources.
 
-I discovered the **SIMBAD Astronomical Database** run by the Centre de Données astronomiques de Strasbourg. It has records for millions of celestial objects.
+I integrated the **SIMBAD Astronomical Database** to identify object types (Galaxy, Nebula, Pulsar, etc.). If SIMBAD fails, I built a keyword-matching fallback that reads the explanation text for clues. Now, users don't just see a "pretty picture"; they see a window into scientific classification.
 
-I built an enrichment pipeline that runs *after* the NASA data is fetched:
+### Chapter 5: The "Blurry Image" Problem (and the ORB fix)
 
-1. **Extract a likely object name** from the image title using regex — stripping photographer credits, parentheticals, and noise.
-2. **Query SIMBAD** with that name.
-3. **Parse the VOTable XML response** to identify the object type (Galaxy, Nebula, Pulsar, etc.).
-4. **Merge the result** back into the APOD data object.
+NASA's 30-year archive includes images from the 1990s — sometimes as low as `480×320` px. Stretched on a 1440p monitor, they look terrible. To maintain a premium feel, I implemented **Image Probing** using `createImageBitmap` in the service worker.
 
-```typescript
-// enrichment.ts
-export async function enrichData(nasaData: ApodData): Promise<ApodData> {
-  const objectName = extractObjectName(nasaData.title);
-  const simbad = await querySimbad(objectName);
-  const inferred = inferFromExplanation(nasaData.title, nasaData.explanation);
+- **Resolution Filtering:** The service worker probes pixel dimensions *before* caching. If an image is too small, it retries for a better one from the random archives.
+- **ORB (Opaque Response Blocking) Bypass:** To ensure images are always available offline, we now store the image **Blobs in IndexedDB** instead of just URLs. This prevents the browser from "forgetting" the image when the network is off.
 
-  return {
-    ...nasaData,
-    object_type: simbad?.objectType || inferred.objectType,
-    more_info_url: simbad?.more_info_url || `https://en.wikipedia.org/...`,
-  };
-}
-```
+### Chapter 6: Rethinking the UI for Intentionality
 
-If SIMBAD fails (it sometimes does — the image might be of a planetary aurora, or a rocket launch), the pipeline degrades gracefully to a keyword-matching fallback that reads the explanation text for clues like "galaxy," "nebula," or "supernova remnant."
+I initially built a complex 12-column grid. It looked stunning but it was **wrong.**
+Users open a new tab to **go somewhere fast**. The imagery should be a backdrop to their intent, not compete with it.
 
----
+I stripped it all down:
+- **Wallpaper First:** The image fills the entire screen edge-to-edge.
+- **Minimalist Widget:** All info lives in a subtle glassmorphism widget in the bottom-left.
+- **Low-Res Center Mode:** If a small image is opted-in, it's rendered centered at natural size on an animated `StarField` background — intentional and artistic, never blurry.
 
-## Chapter 4: The Development Environment Problem
+### Chapter 7: The "Nerd-Scale" Experience (Conclusion)
 
-With the core architecture in place, I had a problem: **I couldn't preview the UI in a browser.**
+The final piece was performance. I wanted "Zero Latency." To achieve this, I built a **Refill Buffer system.**
 
-The entire data flow depends on `chrome.runtime.sendMessage`. Open the page at `localhost:5173` and you immediately get:
+The extension maintains a queue of ready-to-go images. When you open a tab, it's already there — because it was fetched and pre-decoded yesterday, or while you were reading your last email. Combined with **Multi-lingual support** (11 languages) and a **Star Map Overlay** for the constellations, the project evolved from a simple "image fetcher" into a high-performance cosmic window.
 
-```
-Cannot read properties of undefined (reading 'sendMessage')
-```
-
-Because `chrome.runtime` simply doesn't exist outside extension context. You'd have to `npm run build`, drag the `dist/` folder into `chrome://extensions`, reload, and open a new tab — for every single CSS tweak.
-
-That's a terrible developer experience.
-
-I solved this by adding an **environment detection fallback** in the state management layer:
-
-```typescript
-// ApodContext.tsx
-const fetchApod = useCallback(async (type = 'FETCH_APOD') => {
-  try {
-    if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-      // Real extension: use the service worker bridge
-      const response = await chrome.runtime.sendMessage({ type });
-      setApod(response.data);
-    } else {
-      // Dev mode: call the backend services directly
-      console.warn('Chrome runtime not found. Using development fallback.');
-      const rawData = type === 'FETCH_APOD' ? await fetchDirect() : await fetchRandomDirect();
-      const enriched = await enrichData(rawData);
-      setApod(enriched);
-    }
-  } catch (err) { ... }
-}, []);
-```
-
-Now `localhost:5173` works exactly like the real extension. Hot Module Reload, instant feedback, no rebuilds.
+Now, every time I open a tab, I'm not just seeing a website. I'm taking a 2-second journey into the deep field of the universe.
 
 ---
 
-## Chapter 5: The Resolution Problem — Blurry Images on Big Screens
-
-NASA's 30-year archive includes images from the 1990s — sometimes `480×320` pixels. Stretched fullscreen on a 1440p monitor they look terrible, which breaks the premium feel of the extension.
-
-The fix happens inside the **service worker's buffer-fill loop** using `createImageBitmap`, a native Web API available in workers:
-
-```ts
-async function getImageDimensions(url: string) {
-  const blob = await fetch(url).then(r => r.blob());
-  const bitmap = await createImageBitmap(blob);
-  const dims = { width: bitmap.width, height: bitmap.height };
-  bitmap.close(); // free memory immediately
-  return dims;
-}
-
-// Skip if under threshold and user hasn't opted in
-if (!allowLowRes && dims.width < 1000) continue;
-```
-
-This runs *before* the image enters the buffer — the user never sees a bad image. The dimensions are attached to the data object and used by `MediaSection` to decide the rendering mode:
-
-- **High-res (≥ 1000×700):** fullscreen `object-cover`, same as always.
-- **Low-res (opted in):** image renders at its **natural size**, centered on an animated `StarField` background — no blur, no stretching.
-
----
-
-## Chapter 6: Rethinking the UI for the Real World
-
-I built a beautiful initial UI: a full 12-column grid with a massive image card on the left and a detailed info panel on the right. It looked stunning in isolation.
-
-Then I thought: *this is a new tab page.*
-
-On a real new tab, a user might have a search bar, recent bookmarks, a pinned news widget, or their own shortcuts. My extension was consuming the entire screen with information they didn't ask for at that moment. It felt like a colleague who talks at you the second you open a door.
-
-I remembered a [Google UX study on browser start pages](https://design.google/library/redesigning-chrome/) — users primarily want to **get somewhere fast**. The imagery should be a backdrop to their intent, not compete with it.
-
-So I stripped it all down:
-
-- **The image becomes the wallpaper.** It fills the entire screen edge-to-edge with no dimming, no rounded card, no border. Pure, beautiful space.
-- **The info lives in a minimal widget**, pinned to the bottom-left — the corner with the lowest natural eye-tracking priority, leaving the center completely free.
-- **The explanation text is hidden by default.** Users can toggle it open with a single click. No text walls on load.
-
-```
-┌─────────────────────────────────────────────┐
-│                                             │
-│         [Full-screen NASA Image]            │
-│                                             │
-│                                             │
-│  ┌──────────────────────┐                   │
-│  │  🔭 Cosmic Discovery  │                   │
-│  │  NGC 1087 Galaxy      │  [ℹ] [Next][HD]  │
-│  └──────────────────────┘                   │
-└─────────────────────────────────────────────┘
-```
-
-The center of the screen stays clear. That's where users focus when they're about to type a URL or search. The extension respects that intention.
-
----
-
-## Browser Support: Chrome & Firefox
-
-This extension is built to be cross-browser compatible. While developed with Manifest V3, it includes specific configurations for both Chromium-based browsers and Firefox.
-
-### Building for Your Browser
-| Target | Command | Output Directory |
-|---|---|---|
-| **Chrome / Edge / Brave** | `npm run build:chrome` | `dist-chrome/` |
-| **Firefox** | `npm run build:firefox` | `dist-firefox/` |
-
-### Firefox Deployment Guideline
-For a detailed step-by-step on how to make this project live on the Firefox Add-ons (AMO) store, see [FIREFOX_PUBLISHING_GUIDE.md](walkthrough.md) (or follow the provided walkthrough).
-
----
-
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| UI Framework | React 19 | Component-driven rendering |
-| Build Tool | Vite + Bun | Fast bundling, extension-ready output |
-| Styling | Tailwind CSS v4 | Utility classes, glassmorphism layers |
-| Animations | Framer Motion | Smooth transitions, star map SVG draws |
-| Icons | Lucide React | Consistent vector icon set |
-| Extension API | Chrome Manifest V3 | Service worker bridge, storage API |
-| Type Safety | TypeScript | End-to-end typed data contracts |
-| Image Probing | `createImageBitmap` | Decode pixel dimensions in SW without DOM |
+| **Core** | [React 19](https://react.dev/) | Modern component-driven UI |
+| **Build Tool** | [Vite 6](https://vitejs.dev/) + [Bun](https://bun.sh/) | Blazing fast bundling & execution |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Next-gen utility-first styling |
+| **Animations** | [Framer Motion](https://www.framer.com/motion/) | Smooth transitions & UI micro-interactions |
+| **Cross-Browser** | [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) | Unified support for Firefox & Chrome |
+| **Storage** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) | Persistent Blob storage for offline images |
 
 ---
 
-## Architecture Diagram
+## 🚀 How it Works (Architecture)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Chrome Extension                        │
-│                                                             │
-│   ┌─────────────┐       ┌─────────────────────────────┐    │
-│   │  React UI   │──────▶│   background.ts (SW)        │    │
-│   │ (index.tsx) │◀──────│   - Fetches & enriches data │    │
-│   └─────────────┘  msg  │   - Caches in chrome.storage│    │
-│                         └───────────┬─────────────────┘    │
-│                                     │ HTTP                  │
-└─────────────────────────────────────│─────────────────────┘
-                                      ▼
-                         ┌────────────────────────┐
-                         │  Backend (Bun/Express) │
-                         │  localhost:5000         │
-                         │  - NASA APOD API proxy  │
-                         │  - Redis caching        │
-                         └────────────┬───────────┘
-                                      │
-                          ┌───────────┴──────────┐
-                          │                      │
-                   ┌──────▼──────┐    ┌──────────▼────────┐
-                   │   NASA API  │    │   SIMBAD Database  │
-                   └─────────────┘    └───────────────────-┘
+```mermaid
+graph TD
+    UI[React 19 UI] -- sendMessage --> SW[Service Worker background.ts]
+    SW -- fetch/enrich --> BE[Backend Proxy / SIMBAD]
+    BE -- JSON --> SW
+    SW -- fetch blob --> NASA[NASA API / CDN]
+    NASA -- Image Blob --> SW
+    SW -- store --> IDB[(IndexedDB Blobs)]
+    SW -- store metadata --> CSS[(chrome.storage.local)]
+    UI -- retrieve --> CSS & IDB
 ```
 
 ---
 
-## Running Locally
+## 📦 Building and Deployment
 
-**Prerequisites:** Node.js / Bun, the backend service running on `localhost:5000`.
+### 1. Build for Your Browser
+| Target | Command | Output Directory |
+|---|---|---|
+| **Chrome / Edge** | `npm run build:chrome` | `dist-chrome/` |
+| **Firefox** | `npm run build:firefox` | `dist-firefox/` |
 
+### 2. Local Development
+Start the dev server with live preview (simulates extension environment):
 ```bash
-# Install dependencies
 bun install
-
-# Start dev server (live preview at localhost:5173)
 bun run dev
-
-# Build for Chrome
-bun run build
-# Then load the /dist folder in chrome://extensions with Developer Mode on
 ```
+Preview at `localhost:5173`. The UI will detect it's not in an extension and fall back to direct API calls automatically.
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
-### v1 — Shipped ✅
-- [x] Service worker data-fetching bridge (no CORS issues)
-- [x] Offline fallback to most recent cached image
-- [x] SIMBAD astronomical enrichment pipeline
-- [x] Dev-mode fallback (full hot-reload at `localhost:5173`)
-- [x] Fullscreen ambient image layout (bottom-left info widget)
-- [x] Pre-fetching buffer (3-image queue, instant tab open)
-- [x] `onStartup` / `onInstalled` lifecycle pre-loading
-- [x] Star map simulation overlay (SVG constellations, framer-motion)
-- [x] Multi-lingual explanations (11 languages, server-translated)
-- [x] HD resolution filtering — `createImageBitmap` image probing in SW
-- [x] Low-res fallback rendering with StarField ambient background
-- [x] Consolidated settings panel (language selector + resolution toggle)
+### v1.0 — Shipped ✅
+- [x] **Zero Latency Buffer**: 10-image queue pre-refilled in the background.
+- [x] **Offline Survival**: Full IndexedDB blob storage for images.
+- [x] **SIMBAD Enrichment**: Identification of celestial object types.
+- [x] **Multi-lingual support**: 11 languages (server-translated).
+- [x] **Resolution Filtering**: Probing `createImageBitmap` for HD quality.
+- [x] **Star Map Overlay**: Interactive constellation guide.
 
-### v2 — Planned 🚀
-- [ ] Real positional star map (RA/Dec from SIMBAD + D3 sky projection)
-- [ ] Central search bar in the screen center
-- [ ] Quick-links row for user's top sites
-- [ ] "This Week in Space" mode — auto-cycle last 7 days of APOD
-- [ ] Progressive image loading (standard-res → HD silent upgrade)
+### v2.0 — Planned 🚀
+- [ ] **Real Positional Mapping**: RA/Dec mapping from SIMBAD to sky-maps.
+- [ ] **Central Search Bar**: Optional search field for quick navigation.
+- [ ] **This Week in Space**: Slideshow mode for the last 7 days.
+- [ ] **Quick-Links**: Customizable bookmarks row.
 
 ---
 
-*Built with curiosity and a lot of coffee. If you're reading this as a recruiter — thanks for getting this far. The fact that you did probably means we'd have interesting things to talk about.*
+## 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+*Built with curiosity. 🌌*

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'url';
@@ -14,9 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const browser = process.env.BROWSER === 'firefox' ? 'firefox' : 'chrome';
 const outDir = browser === 'firefox' ? 'dist-firefox' : 'dist-chrome';
 
-// ─── Manifest copy plugin ────────────────────────────────────────────────────
-// Copies the correct manifest.json into the output directory after the build.
-function copyManifest() {
+// ─── Manifest copy & injection plugin ──────────────────────────────────────────
+function copyManifest(env) {
   return {
     name: 'copy-manifest',
     closeBundle() {
@@ -25,14 +24,37 @@ function copyManifest() {
           ? path.resolve(__dirname, 'public/manifest.firefox.json')
           : path.resolve(__dirname, 'public/manifest.json');
       const dest = path.resolve(__dirname, outDir, 'manifest.json');
-      fs.copyFileSync(src, dest);
-      console.log(`[copy-manifest] Copied ${path.basename(src)} → ${outDir}/manifest.json`);
+
+      try {
+        // Read the manifest template
+        const manifest = JSON.parse(fs.readFileSync(src, 'utf-8'));
+
+        // Inject the API base URL if present
+        if (env.VITE_API_BASE_URL) {
+          const apiUrl = new URL(env.VITE_API_BASE_URL);
+          const origin = `${apiUrl.protocol}//${apiUrl.host}/*`;
+          
+          if (!manifest.host_permissions) manifest.host_permissions = [];
+          if (!manifest.host_permissions.includes(origin)) {
+            manifest.host_permissions.push(origin);
+          }
+          console.log(`[copy-manifest] Injected host_permission: ${origin}`);
+        }
+
+        // Write the modified manifest to the destination
+        fs.writeFileSync(dest, JSON.stringify(manifest, null, 2));
+        console.log(`[copy-manifest] Processed ${path.basename(src)} → ${outDir}/manifest.json`);
+      } catch (error) {
+        console.error(`[copy-manifest] Error processing manifest: ${error.message}`);
+      }
     },
   };
 }
 
-export default defineConfig({
-  plugins: [react(), tailwindcss(), copyManifest()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    plugins: [react(), tailwindcss(), copyManifest(env)],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -52,4 +74,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });
