@@ -131,7 +131,7 @@ const OptionsPage: React.FC = () => {
             <a href="https://github.com/tarekul42/space-image-of-the-day" target="_blank">
               GitHub
             </a>{' '}
-            •<span> v1.1.0</span>
+            •<span> v1.3.0</span>
           </div>
         </footer>
       </div>
