@@ -118,25 +118,25 @@ graph TD
 
 ---
 
-## 📦 Building and Deployment
+## 📦 Installation
 
-### 1. Build for Your Browser
+**Space Image of the Day** is available right now on the official browser extension stores!
 
-| Target            | Command                 | Output Directory |
-| ----------------- | ----------------------- | ---------------- |
-| **Chrome / Edge** | `npm run build:chrome`  | `dist-chrome/`   |
-| **Firefox**       | `npm run build:firefox` | `dist-firefox/`  |
+*   [Install for Firefox](https://addons.mozilla.org/en-US/firefox/addon/space-image-of-the-day)
+*   [Install for Chrome / Edge](#) *(Link coming soon)*
 
-### 2. Local Development
+### Try it Locally
 
-Start the dev server with live preview (simulates extension environment):
+If you want to try the interface without installing the extension, you can run it locally in your browser:
 
 ```bash
+git clone https://github.com/tarekul42/space-image-of-the-day-frontend.git
+cd space-image-of-the-day-frontend
 bun install
 bun run dev
 ```
 
-Preview at `localhost:5173`. The UI will detect it's not in an extension and fall back to direct API calls automatically.
+Preview at `localhost:5173`. The UI will detect it's not in an extension environment and fall back to direct API calls automatically.
 
 ---
 

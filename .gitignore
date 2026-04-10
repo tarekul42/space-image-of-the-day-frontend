@@ -35,3 +35,6 @@ bun.lockb
 *.njsproj
 *.sln
 *.sw?
+
+# Personal / Extension Guidelines
+FIREFOX_PUBLISHING_GUIDE.md
