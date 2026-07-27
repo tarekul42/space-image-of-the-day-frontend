@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { zoom, zoomIdentity } from 'd3-zoom';
 import { stars, constellations, raToX, decToY, type Star } from '../../data/celestial';
 
 export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
@@ -15,7 +16,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
   useEffect(() => {
     if (!isOpen || !svgRef.current) return;
 
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
 
@@ -23,15 +24,14 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
     const g = svg.append('g').attr('class', 'map-group');
 
-    const zoom = d3
-      .zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.5, 5])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
 
-    svg.call(zoom);
-    svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
+    svg.call(zoomBehavior);
+    svg.call(zoomBehavior.transform, zoomIdentity.translate(0, 0).scale(1));
 
     constellations.forEach((constellation) => {
       constellation.lines.forEach((line) => {
@@ -85,6 +85,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
     return () => {
       svg.on('.zoom', null);
+      svg.selectAll('*').remove();
     };
   }, [isOpen]);
 
