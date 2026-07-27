@@ -7,7 +7,7 @@ import {
 import { enrichData } from '../utils/enrichment';
 import browser from '../browser';
 
-type ViewMode = 'apod' | 'dashboard';
+type ViewMode = 'apod' | 'dashboard' | 'gallery';
 
 interface ApodContextType {
   apod: ApodData | null;
@@ -20,6 +20,7 @@ interface ApodContextType {
   fetchApod: (type?: 'FETCH_APOD' | 'FETCH_RANDOM') => Promise<void>;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  selectApod: (apod: ApodData) => void;
 }
 
 const ApodContext = createContext<ApodContextType | undefined>(undefined);
@@ -142,6 +143,10 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchApod,
         viewMode,
         setViewMode,
+        selectApod: (a: ApodData) => {
+          setApod(a);
+          setViewMode('apod');
+        },
       }}
     >
       {children}
