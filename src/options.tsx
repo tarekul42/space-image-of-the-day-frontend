@@ -11,7 +11,7 @@ const OptionsPage: React.FC = () => {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    browser.storage.sync
+    browser.storage.local
       .get(['settings'])
       .then(
         (result: {
@@ -35,7 +35,7 @@ const OptionsPage: React.FC = () => {
   };
 
   const handleSave = () => {
-    browser.storage.sync
+    browser.storage.local
       .set({
         settings: {
           nasaApiKey: apiKey,

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2, RefreshCw } from 'lucide-react';
 import { useApod } from '../../context/ApodContext';
 import { fetchApodRange } from '../../services/apod.service';
 import type { ApodData } from '../../types/apod';
@@ -9,25 +9,28 @@ export const Gallery: React.FC = () => {
   const { setViewMode, selectApod, language } = useApod();
   const [items, setItems] = useState<ApodData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 6);
+      const fmt = (d: Date) => d.toISOString().split('T')[0];
+      const data = await fetchApodRange(fmt(start), fmt(end), language);
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load images');
+    } finally {
+      setLoading(false);
+    }
+  }, [language]);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - 6);
-        const fmt = (d: Date) => d.toISOString().split('T')[0];
-        const data = await fetchApodRange(fmt(start), fmt(end), language);
-        setItems(data);
-      } catch (err) {
-        console.error('Failed to load weekly APODs', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
-  }, [language]);
+  }, [load]);
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-y-auto custom-scrollbar bg-[#05080f]">
@@ -56,6 +59,16 @@ export const Gallery: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center py-32">
             <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <p className="text-red-400/70 text-sm">{error}</p>
+            <button
+              onClick={load}
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all text-sm"
+            >
+              <RefreshCw className="w-4 h-4" /> Retry
+            </button>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-32 text-white/30">

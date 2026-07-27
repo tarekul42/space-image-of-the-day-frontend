@@ -86,8 +86,6 @@ async function handleFetchApod(date?: string, lang?: string) {
   }
 }
 
-let isRefilling = false;
-
 async function handleClearBuffer(lang?: string, allowLowRes?: boolean) {
   await browser.storage.local.set({ [BUFFER_KEY]: [] });
   // Start the incremental refill chain
@@ -125,24 +123,34 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
  * Incremental Refill - Fetches EXACTLY ONE item if space remains.
  * This prevents long-running loops that can cause the script to hang.
  */
+const refillMutex = new WeakMap<object, Promise<void>>();
+const mutexKey = {};
+
+async function withMutex<T>(key: object, fn: () => Promise<T>): Promise<T | undefined> {
+  const existing = refillMutex.get(key);
+  if (existing) return;
+
+  const promise = fn().finally(() => {
+    if (refillMutex.get(key) === promise) {
+      refillMutex.delete(key);
+    }
+  });
+  refillMutex.set(key, promise);
+  return promise;
+}
+
 async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
-  if (isRefilling) return;
+  await withMutex(mutexKey, async () => {
+    const result = await browser.storage.local.get(BUFFER_KEY);
+    const currentBuffer: ApodData[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
 
-  const result = await browser.storage.local.get(BUFFER_KEY);
-  const currentBuffer: ApodData[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
+    if (currentBuffer.length >= BUFFER_LIMIT) {
+      performCleanup(currentBuffer);
+      return;
+    }
 
-  if (currentBuffer.length >= BUFFER_LIMIT) {
-    // Cleanup blobs we no longer need
-    performCleanup(currentBuffer);
-    return;
-  }
-
-  isRefilling = true;
-  try {
-    // console.log(`[buffer] refilling incrementally. Current size: ${currentBuffer.length}`);
     const enriched = await fetchAndValidateRandomApod(lang, allowLowRes);
 
-    // Check again to avoid races
     const freshResult = await browser.storage.local.get(BUFFER_KEY);
     const freshBuffer: ApodData[] = Array.isArray(freshResult[BUFFER_KEY])
       ? freshResult[BUFFER_KEY]
@@ -152,11 +160,7 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
       freshBuffer.push(enriched);
       await browser.storage.local.set({ [BUFFER_KEY]: freshBuffer });
     }
-  } catch (err) {
-    console.error('Incremental refill failed', err);
-  } finally {
-    isRefilling = false;
-  }
+  });
 }
 
 async function performCleanup(buffer: ApodData[]) {
