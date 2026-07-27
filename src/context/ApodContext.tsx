@@ -7,6 +7,8 @@ import {
 import { enrichData } from '../utils/enrichment';
 import browser from '../browser';
 
+type ViewMode = 'apod' | 'dashboard';
+
 interface ApodContextType {
   apod: ApodData | null;
   loading: boolean;
@@ -16,6 +18,8 @@ interface ApodContextType {
   allowLowRes: boolean;
   setAllowLowRes: (allow: boolean) => void;
   fetchApod: (type?: 'FETCH_APOD' | 'FETCH_RANDOM') => Promise<void>;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
 }
 
 const ApodContext = createContext<ApodContextType | undefined>(undefined);
@@ -30,6 +34,7 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [allowLowRes, setAllowLowRes] = useState<boolean>(() => {
     return localStorage.getItem('allowLowRes') === 'true';
   });
+  const [viewMode, setViewMode] = useState<ViewMode>('apod');
 
   const isInitialMount = React.useRef(true);
   const prevLanguage = React.useRef(language);
@@ -135,6 +140,8 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         allowLowRes,
         setAllowLowRes,
         fetchApod,
+        viewMode,
+        setViewMode,
       }}
     >
       {children}
