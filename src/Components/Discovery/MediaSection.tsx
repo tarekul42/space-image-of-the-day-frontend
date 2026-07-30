@@ -3,13 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ApodData } from '../../types/apod';
 import { StarField } from './StarField';
 import { getImageBlob } from '../../utils/storage';
+import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT } from '../../constants';
 
 interface MediaSectionProps {
   apod: ApodData;
 }
-
-const MIN_WIDTH = 1000;
-const MIN_HEIGHT = 700;
 
 export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
@@ -79,7 +77,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
   const isLowRes =
     apod.width !== undefined &&
     apod.height !== undefined &&
-    (apod.width < MIN_WIDTH || apod.height < MIN_HEIGHT);
+    (apod.width < MIN_IMAGE_WIDTH || apod.height < MIN_IMAGE_HEIGHT);
 
   if (apod.media_type !== 'image') {
     return (

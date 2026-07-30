@@ -4,11 +4,8 @@ import { fetchApod, fetchRandomApod } from './services/apod.service';
 import { ApodData } from './types/apod';
 import { enrichData } from './utils/enrichment';
 import { clearOldImages, saveImageBlob } from './utils/storage';
+import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT, BUFFER_LIMIT, MAX_REFILL_ATTEMPTS } from './constants';
 
-// ─── Constants ───────────────────────────────────────────────
-const MIN_WIDTH = 1000;
-const MIN_HEIGHT = 700;
-const BUFFER_LIMIT = 10;
 const BUFFER_KEY = 'random_buffer';
 const PURGE_KEY = 'cache_purge_v2';
 
@@ -180,7 +177,7 @@ async function performCleanup(buffer: ApodData[]) {
  * Retries until a qualifying image is found (up to 5 attempts).
  */
 async function fetchAndValidateRandomApod(lang?: string, allowLowRes?: boolean) {
-  const MAX_ATTEMPTS = 5;
+  const MAX_ATTEMPTS = MAX_REFILL_ATTEMPTS;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const rawData = await fetchRandomApod(lang);
     if (rawData.media_type !== 'image') continue;
@@ -188,7 +185,7 @@ async function fetchAndValidateRandomApod(lang?: string, allowLowRes?: boolean) 
     const data = rawData.url ? await getImageData(rawData.hdurl || rawData.url) : null;
     if (!data) continue;
 
-    const isHighRes = data.width >= MIN_WIDTH && data.height >= MIN_HEIGHT;
+    const isHighRes = data.width >= MIN_IMAGE_WIDTH && data.height >= MIN_IMAGE_HEIGHT;
     if (allowLowRes || isHighRes) {
       if (data.blob) await saveImageBlob(rawData.date, data.blob);
       return await enrichData({ ...rawData, width: data.width, height: data.height });

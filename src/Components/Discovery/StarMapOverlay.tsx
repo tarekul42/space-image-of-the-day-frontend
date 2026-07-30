@@ -9,9 +9,37 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
   onClose,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
   const [hoveredStar, setHoveredStar] = useState<Star | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    closeBtnRef.current?.focus();
+
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+
+    const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const elements = overlay.querySelectorAll<HTMLElement>(focusable);
+      if (elements.length === 0) return;
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    overlay.addEventListener('keydown', handleKeyDown);
+    return () => overlay.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !svgRef.current) return;
@@ -93,6 +121,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          ref={overlayRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -111,6 +140,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
           </div>
 
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             className="absolute top-6 right-6 z-50 px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all text-sm"
           >
