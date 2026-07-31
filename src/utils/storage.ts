@@ -60,6 +60,17 @@ export async function deleteImageBlob(key: string): Promise<void> {
   });
 }
 
+export async function getAllBlobKeys(): Promise<string[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAllKeys();
+    request.onsuccess = () => resolve(request.result as string[]);
+    request.onerror = () => reject(request.error);
+  });
+}
+
 export async function clearOldImages(keepKeys: string[]): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
