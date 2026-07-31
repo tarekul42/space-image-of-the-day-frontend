@@ -1,13 +1,76 @@
 import browser from './browser';
-import { starterApods } from './data/starterApods';
 import { fetchApod, fetchRandomApod } from './services/apod.service';
 import { ApodData } from './types/apod';
 import { enrichData } from './utils/enrichment';
-import { clearOldImages, saveImageBlob } from './utils/storage';
+import { clearOldImages, getAllBlobKeys, saveImageBlob } from './utils/storage';
 import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT, BUFFER_LIMIT, MAX_REFILL_ATTEMPTS } from './constants';
 
 const BUFFER_KEY = 'random_buffer';
 const PURGE_KEY = 'cache_purge_v2';
+const SEED_CACHE_KEY = 'seed_cache';
+
+const SEED_APODS: ApodData[] = [
+  {
+    date: '2023-02-14',
+    title: 'The Heart Nebula (IC 1805)',
+    explanation:
+      'The Heart Nebula is an emission nebula in the constellation Cassiopeia. It shows glowing ionized hydrogen gas and darker dust lanes.',
+    url: 'https://apod.nasa.gov/apod/image/2302/HeartSoul_deHaro_1080.jpg',
+    hdurl: 'https://apod.nasa.gov/apod/image/2302/HeartSoul_deHaro_1977.jpg',
+    media_type: 'image',
+    object_type: 'Nebula',
+    width: 2000,
+    height: 1600,
+  },
+  {
+    date: '2018-05-04',
+    title: 'The View Toward M101',
+    explanation:
+      "Big, beautiful spiral galaxy M101 is one of the last entries in Charles Messier's famous catalog. Spanning about 170,000 light-years, this galaxy is enormous, almost twice the size of our own Milky Way Galaxy. It is located in the northern constellation Ursa Major, about 25 million light-years away.",
+    url: 'https://apod.nasa.gov/apod/image/1805/M101_3Days_New_APOD.jpg',
+    hdurl: 'https://apod.nasa.gov/apod/image/1805/M101_3Days_New_APOD.jpg',
+    media_type: 'image',
+    object_type: 'Galaxy',
+    width: 1280,
+    height: 1045,
+  },
+  {
+    date: '2024-06-07',
+    title: 'Sharpless 308: Star Bubble',
+    explanation:
+      'Blown by fast winds from a hot, massive star, this cosmic bubble is much larger than the dolphin it sometimes resembles. Cataloged as Sharpless 2-308, it lies some 5,000 light-years away towards the constellation of the Great Dog (Canis Major) and covers slightly more of the sky than a Full Moon.',
+    url: 'https://apod.nasa.gov/apod/image/2406/DolphinNebulaHOO_2048.jpg',
+    hdurl: 'https://apod.nasa.gov/apod/image/2406/DolphinNebulaHOO_2048.jpg',
+    media_type: 'image',
+    object_type: 'Nebula',
+    width: 1280,
+    height: 960,
+  },
+  {
+    date: '2020-05-25',
+    title: 'Mystic Mountain Monster Being Destroyed',
+    explanation:
+      'It is a pillar of gas and dust that measures some three light-years across and is located in the Carina Nebula. The "monster" is being destroyed by the intense radiation and stellar winds of the massive newborn stars surrounding it. Inside the opaque dust, young stars fire off jets of gas that stream out from the peaks.',
+    url: 'https://apod.nasa.gov/apod/image/2005/MysticPillar_HubbleSchmidt_1433.jpg',
+    hdurl: 'https://apod.nasa.gov/apod/image/2005/MysticPillar_HubbleSchmidt_1433.jpg',
+    media_type: 'image',
+    object_type: 'Nebula',
+    width: 1280,
+    height: 1024,
+  },
+  {
+    date: '2022-06-13',
+    title: 'The Whirlpool Galaxy (M51)',
+    explanation:
+      'The Whirlpool Galaxy is a classic spiral galaxy. At only 30 million light years distant and fully 60 thousand light years across, M51 is one of the brightest and most picturesque galaxies on the sky. Its striking spiral structure is thought to be due to its gravitational interaction with the smaller galaxy on the image left.',
+    url: 'https://apod.nasa.gov/apod/image/2206/M51_HubbleMiller_5688.jpg',
+    hdurl: 'https://apod.nasa.gov/apod/image/2206/M51_HubbleMiller_5688.jpg',
+    media_type: 'image',
+    object_type: 'Galaxy',
+    width: 1280,
+    height: 800,
+  },
+];
 
 /**
  * Probe the pixel dimensions of an image URL and return the Blob.
@@ -98,21 +161,34 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
     if (buffer.length > 0) {
       const dataToReturn = buffer.shift();
       await browser.storage.local.set({ [BUFFER_KEY]: buffer });
-      // Lazy refill ONE item in the background
       setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
       return { data: dataToReturn };
-    } else {
-      // ZERO LATENCY FALLBACK: If buffer is empty, return a random starter image
-      // while triggering a refill in the background.
-      const fallback = starterApods[Math.floor(Math.random() * starterApods.length)];
-      // console.log(`[buffer] Empty! Using fallback: ${fallback.title}`);
-
-      setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
-      return { data: fallback, fromFallback: true };
     }
-  } catch (_error: unknown) {
-    // Final safety: even if everything fails, return the first starter APOD
-    return { data: starterApods[0], fromFallback: true };
+
+    // Try IndexedDB fallback: pick a random cached image the user has already seen
+    const blobKeys = await getAllBlobKeys();
+    if (blobKeys.length > 0) {
+      const randomDate = blobKeys[Math.floor(Math.random() * blobKeys.length)];
+      const cached = await browser.storage.local.get(randomDate);
+      if (cached[randomDate]) {
+        setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
+        return { data: cached[randomDate] as ApodData, fromCache: true };
+      }
+    }
+
+    // Fallback to seed data from user storage
+    const seedResult = await browser.storage.local.get(SEED_CACHE_KEY);
+    const seeds: ApodData[] = Array.isArray(seedResult[SEED_CACHE_KEY])
+      ? seedResult[SEED_CACHE_KEY]
+      : [];
+    const fallback = seeds.length > 0
+      ? seeds[Math.floor(Math.random() * seeds.length)]
+      : SEED_APODS[0];
+
+    setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
+    return { data: fallback, fromFallback: true };
+  } catch {
+    return { data: SEED_APODS[0], fromFallback: true };
   }
 }
 
@@ -153,10 +229,11 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
       ? freshResult[BUFFER_KEY]
       : [];
 
-    if (freshBuffer.length < BUFFER_LIMIT) {
-      freshBuffer.push(enriched);
-      await browser.storage.local.set({ [BUFFER_KEY]: freshBuffer });
+    if (freshBuffer.length >= BUFFER_LIMIT) {
+      freshBuffer.shift();
     }
+    freshBuffer.push(enriched);
+    await browser.storage.local.set({ [BUFFER_KEY]: freshBuffer });
   });
 }
 
@@ -231,30 +308,32 @@ browser.runtime.onInstalled.addListener(async (details) => {
   }
 
   if (details.reason === 'install' || details.reason === 'update') {
-    // Prime with STARTER DATA for instant first impression
-    // console.log('[install] Seeding starter buffer (Nerd-Scale)...');
+    // Write seed data to user-side storage so the codebase has no hardcoded dependency
+    await browser.storage.local.set({ [SEED_CACHE_KEY]: SEED_APODS });
 
-    // We don't fill the random_buffer with ALL 20 to keep it manageable,
-    // but we pre-fetch the BLOBS for all 20 so the fallback is instant.
-    await browser.storage.local.set({ [BUFFER_KEY]: starterApods.slice(0, 10) });
+    // Prime buffer with seed data for instant first impression
+    await browser.storage.local.set({ [BUFFER_KEY]: [...SEED_APODS] });
 
-    // Progressively fetch blobs for ALL starter data
-    for (const item of starterApods) {
+    // Pre-fetch blobs for all seed images
+    for (const item of SEED_APODS) {
       try {
         const data = await getImageData(item.hdurl || item.url);
-        // Safety: ensure blob is not empty (ORB check)
         if (data?.blob && data.blob.size > 1024) {
           await saveImageBlob(item.date, data.blob);
         }
-        // Small delay to be polite
         await new Promise((r) => setTimeout(r, 500));
       } catch (err) {
         console.error(`[install] Failed to pre-fetch blob:`, err);
       }
     }
+
+    // Kick off 3 parallel refills to fill buffer with real images faster
+    for (let i = 0; i < 3; i++) {
+      refillBufferIfNeeded();
+    }
   }
 
-  // Schedule full refill check
+  // Always check refill on install/update/chrome_update
   refillBufferIfNeeded();
 });
 
