@@ -51,7 +51,7 @@ const OptionsPage: React.FC = () => {
 
   const clearCache = () => {
     if (confirm('Clear all locally cached astronomical images and metadata?')) {
-      browser.storage.local.clear().then(() => {
+      browser.runtime.sendMessage({ type: 'RESET_CACHE' }).then(() => {
         calculateCacheSize();
       });
     }
@@ -131,7 +131,7 @@ const OptionsPage: React.FC = () => {
             <a href="https://github.com/tarekul42/space-image-of-the-day" target="_blank">
               GitHub
             </a>{' '}
-            •<span> v1.3.0</span>
+            •<span> v1.4.0</span>
           </div>
         </footer>
       </div>

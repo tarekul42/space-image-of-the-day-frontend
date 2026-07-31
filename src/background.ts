@@ -107,6 +107,8 @@ browser.runtime.onMessage.addListener(
         return handleFetchRandom(req.lang, req.allowLowRes);
       case 'CLEAR_BUFFER':
         return handleClearBuffer(req.lang, req.allowLowRes);
+      case 'RESET_CACHE':
+        return handleResetCache();
       case 'FETCH_TOP_SITES':
         return handleFetchTopSites();
       default:
@@ -153,6 +155,27 @@ async function handleClearBuffer(lang?: string, allowLowRes?: boolean) {
   return { success: true };
 }
 
+async function handleResetCache() {
+  await browser.storage.local.clear();
+  await clearOldImages([]);
+  await browser.storage.local.set({ [SEED_CACHE_KEY]: SEED_APODS });
+  await browser.storage.local.set({ [BUFFER_KEY]: [...SEED_APODS] });
+  for (const item of SEED_APODS) {
+    try {
+      const data = await getImageData(item.hdurl || item.url);
+      if (data?.blob && data.blob.size > 1024) {
+        await saveImageBlob(item.date, data.blob);
+      }
+    } catch {
+      // Ignore per-image failures during reset
+    }
+  }
+  for (let i = 0; i < 3; i++) {
+    refillBufferIfNeeded();
+  }
+  return { success: true };
+}
+
 async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
   try {
     const result = await browser.storage.local.get(BUFFER_KEY);
@@ -181,9 +204,8 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
     const seeds: ApodData[] = Array.isArray(seedResult[SEED_CACHE_KEY])
       ? seedResult[SEED_CACHE_KEY]
       : [];
-    const fallback = seeds.length > 0
-      ? seeds[Math.floor(Math.random() * seeds.length)]
-      : SEED_APODS[0];
+    const fallback =
+      seeds.length > 0 ? seeds[Math.floor(Math.random() * seeds.length)] : SEED_APODS[0];
 
     setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
     return { data: fallback, fromFallback: true };
@@ -196,7 +218,7 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
  * Incremental Refill - Fetches EXACTLY ONE item if space remains.
  * This prevents long-running loops that can cause the script to hang.
  */
-const refillMutex = new WeakMap<object, Promise<void>>();
+const refillMutex = new WeakMap<object, Promise<unknown>>();
 const mutexKey = {};
 
 async function withMutex<T>(key: object, fn: () => Promise<T>): Promise<T | undefined> {

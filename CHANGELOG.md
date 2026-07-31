@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0] - 2026-07-31
+
+### Added
+- `RESET_CACHE` background handler for full cache reset (storage + IndexedDB + seed re-seed)
+
+### Changed
+- Seed images moved from hardcoded `starterApods.ts` into user-side `chrome.storage.local` (`seed_cache`) on install
+- Buffer now uses FIFO eviction: newly downloaded images replace the oldest buffered images
+- Empty-buffer fallback now prefers a random previously-cached image from IndexedDB before falling back to seed data
+- Install kicks off 3 parallel refills so the buffer fills with real NASA images faster
+- Options "Clear Cache" now resets via `RESET_CACHE`, returning the extension to a fresh-install state
+- Fixed pre-existing TypeScript error in buffer refill mutex typing
+
 ## [1.3.0] - 2026-07-27
 
 ### Added
