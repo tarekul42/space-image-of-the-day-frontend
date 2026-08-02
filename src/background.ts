@@ -8,6 +8,9 @@ import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT, BUFFER_LIMIT, MAX_REFILL_ATTEMPTS } 
 const BUFFER_KEY = 'random_buffer';
 const PURGE_KEY = 'cache_purge_v2';
 const SEED_CACHE_KEY = 'seed_cache';
+const LAST_SHOWN_KEY = 'last_shown_date';
+
+const ISO_DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
 const SEED_APODS: ApodData[] = [
   {
@@ -105,8 +108,6 @@ browser.runtime.onMessage.addListener(
         return handleFetchApod(req.date, req.lang);
       case 'FETCH_RANDOM':
         return handleFetchRandom(req.lang, req.allowLowRes);
-      case 'CLEAR_BUFFER':
-        return handleClearBuffer(req.lang, req.allowLowRes);
       case 'RESET_CACHE':
         return handleResetCache();
       case 'FETCH_TOP_SITES':
@@ -138,7 +139,7 @@ async function handleFetchApod(date?: string, lang?: string) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const allCache = await browser.storage.local.get(null);
     const keys = Object.keys(allCache)
-      .filter((k) => k !== BUFFER_KEY && k !== PURGE_KEY)
+      .filter((k) => ISO_DATE_KEY.test(k))
       .sort()
       .reverse();
     if (keys.length > 0) {
@@ -146,13 +147,6 @@ async function handleFetchApod(date?: string, lang?: string) {
     }
     return { error: errorMessage };
   }
-}
-
-async function handleClearBuffer(lang?: string, allowLowRes?: boolean) {
-  await browser.storage.local.set({ [BUFFER_KEY]: [] });
-  // Start the incremental refill chain
-  setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 0);
-  return { success: true };
 }
 
 async function handleResetCache() {
@@ -178,12 +172,19 @@ async function handleResetCache() {
 
 async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
   try {
-    const result = await browser.storage.local.get(BUFFER_KEY);
+    const result = await browser.storage.local.get([BUFFER_KEY, LAST_SHOWN_KEY]);
     const buffer: ApodData[] = Array.isArray(result[BUFFER_KEY]) ? result[BUFFER_KEY] : [];
+    const lastShownDate = result[LAST_SHOWN_KEY] as string | undefined;
 
     if (buffer.length > 0) {
-      const dataToReturn = buffer.shift();
-      await browser.storage.local.set({ [BUFFER_KEY]: buffer });
+      let dataToReturn = buffer.shift()!;
+      if (buffer.length > 0 && dataToReturn.date === lastShownDate) {
+        dataToReturn = buffer.shift()!;
+      }
+      await browser.storage.local.set({
+        [BUFFER_KEY]: buffer,
+        [LAST_SHOWN_KEY]: dataToReturn.date,
+      });
       setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
       return { data: dataToReturn };
     }
@@ -191,9 +192,12 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
     // Try IndexedDB fallback: pick a random cached image the user has already seen
     const blobKeys = await getAllBlobKeys();
     if (blobKeys.length > 0) {
-      const randomDate = blobKeys[Math.floor(Math.random() * blobKeys.length)];
+      const candidates = blobKeys.filter((d) => d !== lastShownDate);
+      const pool = candidates.length > 0 ? candidates : blobKeys;
+      const randomDate = pool[Math.floor(Math.random() * pool.length)];
       const cached = await browser.storage.local.get(randomDate);
       if (cached[randomDate]) {
+        await browser.storage.local.set({ [LAST_SHOWN_KEY]: randomDate });
         setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
         return { data: cached[randomDate] as ApodData, fromCache: true };
       }
@@ -204,9 +208,14 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
     const seeds: ApodData[] = Array.isArray(seedResult[SEED_CACHE_KEY])
       ? seedResult[SEED_CACHE_KEY]
       : [];
+    const seedPool = seeds.filter((s) => s.date !== lastShownDate);
+    const available = seedPool.length > 0 ? seedPool : seeds;
     const fallback =
-      seeds.length > 0 ? seeds[Math.floor(Math.random() * seeds.length)] : SEED_APODS[0];
+      available.length > 0
+        ? available[Math.floor(Math.random() * available.length)]
+        : SEED_APODS[0];
 
+    await browser.storage.local.set({ [LAST_SHOWN_KEY]: fallback.date });
     setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
     return { data: fallback, fromFallback: true };
   } catch {
@@ -264,7 +273,7 @@ async function performCleanup(buffer: ApodData[]) {
     const result = await browser.storage.local.get(null);
     const bufferedDates = buffer.map((item: ApodData) => item.date);
     const today = new Date().toISOString().split('T')[0];
-    const cachedDates = Object.keys(result).filter((k) => k !== BUFFER_KEY);
+    const cachedDates = Object.keys(result).filter((k) => ISO_DATE_KEY.test(k));
     await clearOldImages([...bufferedDates, ...cachedDates, today]);
   } catch (err) {
     console.error('Cleanup failed', err);

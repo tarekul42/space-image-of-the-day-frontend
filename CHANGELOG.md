@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.1] - 2026-08-02
+
+### Fixed
+- Offline fallback in `FETCH_APOD` could return the seed list or settings object as the APOD; now only ISO date-keyed entries are considered
+- Removed dead `CLEAR_BUFFER` message handler (superseded by `RESET_CACHE`)
+- Cache cleanup keep-list now only includes real APOD date keys instead of storage meta keys
+
+### Changed
+- Buffer and fallback paths now avoid showing the same image twice in a row by tracking the last-shown date
+
 ## [1.4.0] - 2026-07-31
 
 ### Added
