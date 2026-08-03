@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2, RefreshCw, WifiOff } from 'lucide-react';
 import { useApod } from '../../context/ApodContext';
 import { fetchApodRange } from '../../services/apod.service';
+import browser from '../../browser';
 import type { ApodData } from '../../types/apod';
 
 export const Gallery: React.FC = () => {
@@ -10,17 +11,34 @@ export const Gallery: React.FC = () => {
   const [items, setItems] = useState<ApodData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [offline, setOffline] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setOffline(false);
     try {
       const end = new Date();
       const start = new Date();
       start.setDate(end.getDate() - 6);
       const fmt = (d: Date) => d.toISOString().split('T')[0];
-      const data = await fetchApodRange(fmt(start), fmt(end), language);
+      let data: ApodData[];
+      let fromCache = false;
+      if (browser.runtime?.id) {
+        const res = (await browser.runtime.sendMessage({
+          type: 'FETCH_RANGE',
+          startDate: fmt(start),
+          endDate: fmt(end),
+          lang: language,
+        })) as { data?: ApodData[]; fromCache?: boolean; error?: string };
+        if (res.error) throw new Error(res.error);
+        data = res.data ?? [];
+        fromCache = !!res.fromCache;
+      } else {
+        data = await fetchApodRange(fmt(start), fmt(end), language);
+      }
       setItems(data);
+      setOffline(fromCache);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load images');
     } finally {
@@ -54,6 +72,11 @@ export const Gallery: React.FC = () => {
             This Week in Space
           </h1>
           <p className="text-white/40 text-sm mt-2">Browse the last 7 days of cosmic discoveries</p>
+          {offline && (
+            <p className="flex items-center gap-1.5 text-amber-300/70 text-xs mt-2">
+              <WifiOff className="w-3.5 h-3.5" /> Showing cached images — you're offline
+            </p>
+          )}
         </motion.div>
 
         {loading ? (

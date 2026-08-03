@@ -1,8 +1,9 @@
 import browser from './browser';
-import { fetchApod, fetchRandomApod } from './services/apod.service';
+import { fetchApod, fetchRandomApod, fetchApodRange } from './services/apod.service';
 import { ApodData } from './types/apod';
 import { enrichData } from './utils/enrichment';
 import { clearOldImages, getAllBlobKeys, saveImageBlob } from './utils/storage';
+import { popFromBuffer } from './utils/buffer';
 import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT, BUFFER_LIMIT, MAX_REFILL_ATTEMPTS } from './constants';
 
 const BUFFER_KEY = 'random_buffer';
@@ -98,7 +99,14 @@ async function getImageData(
 
 browser.runtime.onMessage.addListener(
   (request: unknown, _sender: browser.Runtime.MessageSender) => {
-    const req = request as { type: string; date?: string; lang?: string; allowLowRes?: boolean };
+    const req = request as {
+      type: string;
+      date?: string;
+      lang?: string;
+      allowLowRes?: boolean;
+      startDate?: string;
+      endDate?: string;
+    };
 
     // Use a pattern that ensures we ALWAYS return a promise or false.
     // This prevents "Receiving end does not exist" synchronously.
@@ -112,11 +120,39 @@ browser.runtime.onMessage.addListener(
         return handleResetCache();
       case 'FETCH_TOP_SITES':
         return handleFetchTopSites();
+      case 'FETCH_RANGE':
+        return handleFetchRange(req.startDate, req.endDate, req.lang);
       default:
         return false; // Not a known message type
     }
   },
 );
+
+async function handleFetchRange(
+  startDate?: string,
+  endDate?: string,
+  lang?: string,
+): Promise<{ data: ApodData[]; fromCache?: boolean }> {
+  try {
+    const data = await fetchApodRange(startDate ?? '', endDate ?? '', lang);
+    return { data, fromCache: false };
+  } catch {
+    // Offline fallback: surface any cached APODs within the requested window.
+    try {
+      const allCache = await browser.storage.local.get(null);
+      const cached = Object.keys(allCache)
+        .filter((k) => ISO_DATE_KEY.test(k))
+        .filter((k) => (!startDate || k >= startDate) && (!endDate || k <= endDate))
+        .sort()
+        .reverse()
+        .map((k) => allCache[k] as ApodData);
+      if (cached.length > 0) return { data: cached, fromCache: true };
+    } catch {
+      // ignore
+    }
+    return { data: [] };
+  }
+}
 
 async function handleFetchApod(date?: string, lang?: string) {
   try {
@@ -177,16 +213,15 @@ async function handleFetchRandom(lang?: string, allowLowRes?: boolean) {
     const lastShownDate = result[LAST_SHOWN_KEY] as string | undefined;
 
     if (buffer.length > 0) {
-      let dataToReturn = buffer.shift()!;
-      if (buffer.length > 0 && dataToReturn.date === lastShownDate) {
-        dataToReturn = buffer.shift()!;
+      const { data: dataToReturn, buffer: remaining } = popFromBuffer(buffer, lastShownDate);
+      if (dataToReturn) {
+        await browser.storage.local.set({
+          [BUFFER_KEY]: remaining,
+          [LAST_SHOWN_KEY]: dataToReturn.date,
+        });
+        setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
+        return { data: dataToReturn };
       }
-      await browser.storage.local.set({
-        [BUFFER_KEY]: buffer,
-        [LAST_SHOWN_KEY]: dataToReturn.date,
-      });
-      setTimeout(() => refillBufferIfNeeded(lang, allowLowRes), 100);
-      return { data: dataToReturn };
     }
 
     // Try IndexedDB fallback: pick a random cached image the user has already seen

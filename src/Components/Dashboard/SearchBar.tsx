@@ -1,12 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Globe } from 'lucide-react';
+import { getSettings } from '../../services/settings.service';
+import {
+  SearchEngine,
+  SEARCH_ENGINE_LABELS,
+  SEARCH_ENGINES,
+  resolveSearchUrl,
+} from '../../utils/settings';
 
 export const SearchBar: React.FC = () => {
   const [query, setQuery] = React.useState('');
+  const [engine, setEngine] = React.useState<SearchEngine>('google');
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
+    getSettings().then((settings) => {
+      if (SEARCH_ENGINES.includes(settings.searchEngine)) {
+        setEngine(settings.searchEngine);
+      }
+    });
     inputRef.current?.focus();
   }, []);
 
@@ -14,7 +27,7 @@ export const SearchBar: React.FC = () => {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    window.location.href = resolveSearchUrl(engine, q);
   };
 
   return (
@@ -33,8 +46,23 @@ export const SearchBar: React.FC = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search the cosmos..."
-          className="w-full bg-transparent text-white text-lg py-4 pl-14 pr-6 rounded-3xl outline-none placeholder:text-white/30"
+          className="w-full bg-transparent text-white text-lg py-4 pl-14 pr-16 rounded-3xl outline-none placeholder:text-white/30"
         />
+        <div className="absolute right-4 flex items-center gap-1 text-white/40">
+          <Globe className="w-4 h-4" />
+          <select
+            value={engine}
+            onChange={(e) => setEngine(e.target.value as SearchEngine)}
+            className="bg-transparent text-xs text-white/70 outline-none appearance-none cursor-pointer"
+            aria-label="Search engine"
+          >
+            {SEARCH_ENGINES.map((name) => (
+              <option key={name} value={name} className="bg-[#1a1a1f] text-white">
+                {SEARCH_ENGINE_LABELS[name]}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </motion.form>
   );

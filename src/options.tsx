@@ -2,28 +2,42 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import browser from './browser';
+import { getSettings, updateSettings } from './services/settings.service';
+import { SearchEngine, SEARCH_ENGINES, SEARCH_ENGINE_LABELS } from './utils/settings';
+
+const LANGUAGES: { value: string; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Español' },
+  { value: 'fr', label: 'Français' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'pt', label: 'Português' },
+  { value: 'ja', label: '日本語' },
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'bn', label: 'বাংলা' },
+  { value: 'hi', label: 'हिन्दी' },
+];
 
 const OptionsPage: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
+  const [allowLowRes, setAllowLowRes] = useState(false);
+  const [language, setLanguage] = useState('en');
+  const [searchEngine, setSearchEngine] = useState<SearchEngine>('google');
   const [cacheSize, setCacheSize] = useState<string>('0 KB');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    browser.storage.local
-      .get(['settings'])
-      .then(
-        (result: {
-          settings?: { nasaApiKey?: string; reducedMotion?: boolean; highContrast?: boolean };
-        }) => {
-          if (result.settings) {
-            setApiKey(result.settings.nasaApiKey || '');
-            setReducedMotion(result.settings.reducedMotion || false);
-            setHighContrast(result.settings.highContrast || false);
-          }
-        },
-      );
+    getSettings().then((settings) => {
+      setApiKey(settings.nasaApiKey || '');
+      setReducedMotion(settings.reducedMotion);
+      setHighContrast(settings.highContrast);
+      setAllowLowRes(settings.allowLowRes);
+      setLanguage(settings.language);
+      setSearchEngine(settings.searchEngine);
+    });
 
     calculateCacheSize();
   }, []);
@@ -35,18 +49,17 @@ const OptionsPage: React.FC = () => {
   };
 
   const handleSave = () => {
-    browser.storage.local
-      .set({
-        settings: {
-          nasaApiKey: apiKey,
-          reducedMotion,
-          highContrast,
-        },
-      })
-      .then(() => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      });
+    updateSettings({
+      nasaApiKey: apiKey,
+      reducedMotion,
+      highContrast,
+      allowLowRes,
+      language,
+      searchEngine,
+    }).then(() => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
   };
 
   const clearCache = () => {
@@ -87,6 +100,30 @@ const OptionsPage: React.FC = () => {
 
         <section className="options-section">
           <h2>🎨 Appearance</h2>
+          <div className="option-item">
+            <label htmlFor="language">Language</label>
+            <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+              {LANGUAGES.map((l) => (
+                <option key={l.value} value={l.value}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <p className="hint">Cosmic descriptions are translated server-side.</p>
+          </div>
+          <div className="option-item toggle-item">
+            <label>
+              <input
+                type="checkbox"
+                checked={allowLowRes}
+                onChange={(e) => setAllowLowRes(e.target.checked)}
+              />
+              Allow Low-Resolution Images
+            </label>
+            <p className="hint">
+              Shows smaller 1990s-era files when no high-res (≥1000px) image is available.
+            </p>
+          </div>
           <div className="option-item toggle-item">
             <label>
               <input
@@ -106,6 +143,24 @@ const OptionsPage: React.FC = () => {
               />
               High Contrast Text
             </label>
+          </div>
+        </section>
+
+        <section className="options-section">
+          <h2>🔎 Search</h2>
+          <div className="option-item">
+            <label htmlFor="searchEngine">Default Search Engine</label>
+            <select
+              id="searchEngine"
+              value={searchEngine}
+              onChange={(e) => setSearchEngine(e.target.value as SearchEngine)}
+            >
+              {SEARCH_ENGINES.map((engine) => (
+                <option key={engine} value={engine}>
+                  {SEARCH_ENGINE_LABELS[engine]}
+                </option>
+              ))}
+            </select>
           </div>
         </section>
 
@@ -131,7 +186,7 @@ const OptionsPage: React.FC = () => {
             <a href="https://github.com/tarekul42/space-image-of-the-day" target="_blank">
               GitHub
             </a>{' '}
-            •<span> v1.4.1</span>
+            •<span> v1.4.2</span>
           </div>
         </footer>
       </div>

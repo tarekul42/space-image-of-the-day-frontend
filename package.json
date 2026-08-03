@@ -1,6 +1,6 @@
 {
   "name": "space-image-of-the-day-frontend",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Frontend for Space Image of the Day Chrome Extension",
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "build:chrome": "BROWSER=chrome vite build",
     "build:firefox": "BROWSER=firefox vite build",
     "build:all": "bun run build:chrome && bun run build:firefox",
+    "check:version": "bun scripts/check-version.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, GalleryVertical } from 'lucide-react';
@@ -10,11 +10,7 @@ import { Dashboard } from './Components/Dashboard/Dashboard';
 import { Gallery } from './Components/Gallery/Gallery';
 
 const App: React.FC = () => {
-  const { fetchApod, viewMode, setViewMode } = useApod();
-
-  useEffect(() => {
-    fetchApod('FETCH_RANDOM');
-  }, [fetchApod]);
+  const { viewMode, setViewMode } = useApod();
 
   return (
     <div className="relative w-full h-full min-h-screen">

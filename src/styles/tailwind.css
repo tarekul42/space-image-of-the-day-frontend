@@ -25,3 +25,25 @@
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
   }
 }
+
+/* ─── Accessibility overrides (applied via body class) ─────────── */
+.reduced-motion *,
+.reduced-motion ::before,
+.reduced-motion ::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+.high-contrast .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.high-contrast .text-white\/30,
+.high-contrast .text-white\/40,
+.high-contrast .text-white\/50,
+.high-contrast .text-white\/60,
+.high-contrast .text-white\/70 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}

@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.2] - 2026-08-03
+
+### Added
+- Unified settings store: `language`, `allowLowRes`, `highContrast`, `reducedMotion`, `searchEngine`, and `viewMode` now live in one `storage.settings` object via a new `settings.service` (legacy `localStorage` keys migrated on read)
+- Options page gains Language, Allow Low-Res, and Search Engine settings
+- New-tab settings live-sync with the Options page via `storage.onChanged`
+- Search-engine choice in the Dashboard (Google / Bing / DuckDuckGo)
+- `FETCH_RANGE` background handler routes the "This Week" gallery through the service worker with an offline cached fallback + "you're offline" badge
+- `check:version` script + CI step that fails the build if manifests drift from `package.json`
+- Top-sites fallback message when the `topSites` permission is unavailable
+- Unit tests for buffer pop/evict rules and settings/search helpers (suite now 34 tests)
+
+### Changed
+- New-tab hydration now consumes the prefetch queue through the service worker (`FETCH_RANDOM` pops + tracks `last_shown`) instead of peeking `buffer[0]`; removed the duplicate fetch in `App`
+- First-run language defaults to the browser locale when no explicit choice is stored
+- High-contrast / reduced-motion toggles now reach the new-tab UI
+- Manifests (Chrome + Firefox) synced to `1.4.2`
+
 ## [1.4.1] - 2026-08-02
 
 ### Fixed
