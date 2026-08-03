@@ -5,9 +5,11 @@ import {
   fetchRandomApod as fetchRandomDirect,
 } from '../services/apod.service';
 import { getSettings, updateSettings } from '../services/settings.service';
-import { ViewMode, detectBrowserLanguage } from '../utils/settings';
+import { ViewMode, Theme, detectBrowserLanguage } from '../utils/settings';
 import { enrichData } from '../utils/enrichment';
 import { CosmicObject } from '../data/catalog';
+import { applyTheme } from '../utils/theme';
+import { getFavorites, saveFavorite, removeFavorite } from '../services/favorites.service';
 import browser from '../browser';
 
 interface ApodContextType {
@@ -22,6 +24,8 @@ interface ApodContextType {
   setHighContrast: (value: boolean) => void;
   reducedMotion: boolean;
   setReducedMotion: (value: boolean) => void;
+  theme: Theme;
+  setTheme: (value: Theme) => void;
   fetchApod: (type?: 'FETCH_APOD' | 'FETCH_RANDOM') => Promise<void>;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
@@ -30,6 +34,10 @@ interface ApodContextType {
   starMapObjects: CosmicObject[];
   openStarMap: (objects?: CosmicObject[]) => void;
   closeStarMap: () => void;
+  favorites: ApodData[];
+  favoritesLoaded: boolean;
+  toggleFavorite: (apod: ApodData) => void;
+  isFavorite: (date: string) => boolean;
 }
 
 const ApodContext = createContext<ApodContextType | undefined>(undefined);
@@ -59,8 +67,46 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [highContrast, setHighContrast] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('apod');
+  const [theme, setTheme] = useState<Theme>('cosmic');
   const [isStarMapOpen, setIsStarMapOpen] = useState(false);
   const [starMapObjects, setStarMapObjects] = useState<CosmicObject[]>([]);
+  const [favorites, setFavorites] = useState<ApodData[]>([]);
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+
+  const favoriteDates = useRef(new Set<string>());
+  const refreshFavorites = useCallback(async () => {
+    try {
+      const list = await getFavorites();
+      setFavorites(list);
+      favoriteDates.current = new Set(list.map((f) => f.date));
+    } catch {
+      // IndexedDB unavailable — album stays empty but the app keeps working.
+    } finally {
+      setFavoritesLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshFavorites();
+  }, [refreshFavorites]);
+
+  const toggleFavorite = useCallback(
+    (apod: ApodData) => {
+      const already = favoriteDates.current.has(apod.date);
+      if (already) {
+        removeFavorite(apod.date)
+          .then(() => refreshFavorites())
+          .catch(() => {});
+      } else {
+        saveFavorite(apod)
+          .then(() => refreshFavorites())
+          .catch(() => {});
+      }
+    },
+    [refreshFavorites],
+  );
+
+  const isFavorite = useCallback((date: string) => favoriteDates.current.has(date), []);
 
   const openStarMap = useCallback((objects: CosmicObject[] = []) => {
     setStarMapObjects(objects);
@@ -68,6 +114,11 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const closeStarMap = useCallback(() => setIsStarMapOpen(false), []);
+
+  // Apply the active theme to the document.
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   const isInitialMount = useRef(true);
   const prevLanguage = useRef(language);
@@ -114,6 +165,7 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setHighContrast(settings.highContrast);
         setReducedMotion(settings.reducedMotion);
         setViewMode(settings.viewMode);
+        setTheme(settings.theme);
       } catch (err) {
         console.error('Failed to hydrate settings', err);
       }
@@ -162,6 +214,11 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateSettings({ highContrast, reducedMotion }).catch(() => {});
   }, [highContrast, reducedMotion]);
 
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    updateSettings({ theme }).catch(() => {});
+  }, [theme]);
+
   // ─── Apply accessibility classes to the document ─────────────
   useEffect(() => {
     const el = document.body;
@@ -180,6 +237,14 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof next.allowLowRes === 'boolean') setAllowLowRes(next.allowLowRes);
       if (typeof next.highContrast === 'boolean') setHighContrast(next.highContrast);
       if (typeof next.reducedMotion === 'boolean') setReducedMotion(next.reducedMotion);
+      if (
+        next.theme === 'cosmic' ||
+        next.theme === 'nebula' ||
+        next.theme === 'aurora' ||
+        next.theme === 'daylight'
+      ) {
+        setTheme(next.theme);
+      }
       if (
         next.viewMode === 'apod' ||
         next.viewMode === 'dashboard' ||
@@ -206,6 +271,8 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setHighContrast,
         reducedMotion,
         setReducedMotion,
+        theme,
+        setTheme,
         fetchApod,
         viewMode,
         setViewMode,
@@ -217,6 +284,10 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
         starMapObjects,
         openStarMap,
         closeStarMap,
+        favorites,
+        favoritesLoaded,
+        toggleFavorite,
+        isFavorite,
       }}
     >
       {children}

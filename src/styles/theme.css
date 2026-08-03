@@ -1,0 +1,136 @@
+/* ─── Gentle Theme Engine ────────────────────────────────────────
+ * Curated themes drive the page via CSS variables set on <html data-theme>.
+ * Dark themes swap backgrounds/accents; the "daylight" theme additionally
+ * flips text/surfaces through the `.theme-light` overrides below.
+ */
+
+:root,
+html[data-theme='cosmic'] {
+  --theme-bg: #0a0a0c;
+  --theme-bg-alt: #05080f;
+  --theme-surface: rgba(0, 0, 0, 0.4);
+  --theme-surface-soft: rgba(255, 255, 255, 0.05);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-accent: #3b82f6;
+  --theme-accent-soft: rgba(59, 130, 246, 0.15);
+  --theme-text: #ffffff;
+  --theme-text-muted: rgba(255, 255, 255, 0.45);
+}
+
+html[data-theme='nebula'] {
+  --theme-bg: #0c0718;
+  --theme-bg-alt: #0a0514;
+  --theme-surface: rgba(28, 15, 54, 0.45);
+  --theme-surface-soft: rgba(167, 139, 250, 0.08);
+  --theme-border: rgba(167, 139, 250, 0.18);
+  --theme-accent: #a78bfa;
+  --theme-accent-soft: rgba(167, 139, 250, 0.18);
+  --theme-text: #f7f4ff;
+  --theme-text-muted: rgba(231, 222, 255, 0.5);
+}
+
+html[data-theme='aurora'] {
+  --theme-bg: #02130f;
+  --theme-bg-alt: #01100d;
+  --theme-surface: rgba(6, 42, 35, 0.45);
+  --theme-surface-soft: rgba(45, 212, 191, 0.08);
+  --theme-border: rgba(45, 212, 191, 0.18);
+  --theme-accent: #2dd4bf;
+  --theme-accent-soft: rgba(45, 212, 191, 0.18);
+  --theme-text: #effffb;
+  --theme-text-muted: rgba(204, 250, 241, 0.5);
+}
+
+html[data-theme='daylight'] {
+  --theme-bg: #f4f2ec;
+  --theme-bg-alt: #efece4;
+  --theme-surface: rgba(255, 255, 255, 0.72);
+  --theme-surface-soft: rgba(255, 255, 255, 0.7);
+  --theme-border: rgba(20, 20, 30, 0.12);
+  --theme-accent: #2563eb;
+  --theme-accent-soft: rgba(37, 99, 235, 0.12);
+  --theme-text: #191a22;
+  --theme-text-muted: rgba(25, 26, 34, 0.55);
+}
+
+/* Surface helpers used by themed components. */
+.theme-bg {
+  background-color: var(--theme-bg-alt);
+}
+.theme-surface {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+}
+.theme-surface-soft {
+  background-color: var(--theme-surface-soft);
+}
+.theme-accent-text {
+  color: var(--theme-accent);
+}
+.theme-text {
+  color: var(--theme-text);
+}
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+
+/* ─── Daylight text & surface overrides ───────────────────────── */
+.theme-light .text-white {
+  color: var(--theme-text);
+}
+.theme-light .text-white\/90 {
+  color: rgba(25, 26, 34, 0.9);
+}
+.theme-light .text-white\/80 {
+  color: rgba(25, 26, 34, 0.8);
+}
+.theme-light .text-white\/70 {
+  color: rgba(25, 26, 34, 0.72);
+}
+.theme-light .text-white\/60 {
+  color: rgba(25, 26, 34, 0.62);
+}
+.theme-light .text-white\/50 {
+  color: rgba(25, 26, 34, 0.55);
+}
+.theme-light .text-white\/40 {
+  color: rgba(25, 26, 34, 0.46);
+}
+.theme-light .text-white\/30 {
+  color: rgba(25, 26, 34, 0.36);
+}
+.theme-light .text-blue-300 {
+  color: #1d4ed8;
+}
+.theme-light .text-blue-400 {
+  color: #1e40af;
+}
+.theme-light .text-amber-300 {
+  color: #b45309;
+}
+.theme-light .text-amber-300\/70,
+.theme-light .text-amber-300\/90 {
+  color: #b45309;
+}
+.theme-light .text-red-400,
+.theme-light .text-red-400\/70 {
+  color: #dc2626;
+}
+.theme-light .border-white\/10 {
+  border-color: rgba(20, 20, 30, 0.12);
+}
+.theme-light .border-white\/20 {
+  border-color: rgba(20, 20, 30, 0.2);
+}
+.theme-light .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.theme-light .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+.theme-light .hover\:bg-white\/10:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+}
+.theme-light .hover\:bg-white\/20:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}

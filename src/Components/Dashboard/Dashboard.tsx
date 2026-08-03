@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SearchBar } from './SearchBar';
 import { TopSites } from './TopSites';
+import { FirstContact } from '../UI/FirstContact';
 import { useApod } from '../../context/ApodContext';
 import { ArrowLeft } from 'lucide-react';
 
@@ -55,6 +56,8 @@ export const Dashboard: React.FC = () => {
           </motion.h2>
           <TopSites />
         </div>
+
+        <FirstContact />
       </div>
     </div>
   );

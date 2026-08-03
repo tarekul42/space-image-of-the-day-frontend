@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.0] - 2026-08-03
+
+### Added
+- **Live sky engine** — a pure `astronomy` module (JD/GMST/LST, equatorial→horizontal, visibility filtering) drives a real star map that resolves the user's location (with graceful fallback), shows only what's above the horizon now, and plots live planet positions from compact Keplerian elements
+- **Cosmic search** — new backend `/api/v1/catalog/search` over a curated catalog (stars, Messier/NGC deep-sky, planets) with ranked autocomplete; the search box surfaces cosmic suggestions and can open them on the live sky map, with an offline local catalog fallback
+- **Timeline thread** — gallery cards now match objects to the catalog; a per-day "N in sky" button and the detail view highlight confirmed objects on the live star map
+- **Daily "First Contact" trivia** — a one-line cosmic fact picked deterministically from the date (no network) shown on the dashboard and under the current image
+- **Favorites ("Sorted Objects")** — heart a discovery to save it to IndexedDB, browsable in a new gallery Favorites tab with remove, shared across tabs
+- **Gentle theme engine** — `cosmic`, `nebula`, `aurora`, and `daylight` themes applied via CSS variables, selectable in the in-tab Settings menu and on the Options page, live-synced across tabs
+- **Historical time travel** — the gallery jumps to any date from `1995-06-16` (APOD's first day) onward; the backend range endpoint now chunks long windows past NASA's 30-day limit and can skip translation for bulk backfills
+
+### Changed
+- Manifests (Chrome + Firefox) synced to `1.5.0`; added `geolocation` permission for the live sky
+- Settings store, options, and menus extended with `theme`
+- Test suite grew to 70 tests (astronomy, catalog matching, daily facts, theme helpers)
+
 ## [1.4.2] - 2026-08-03
 
 ### Added

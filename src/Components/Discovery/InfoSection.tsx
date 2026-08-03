@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Telescope, Download, Info, X, Map } from 'lucide-react';
+import { Telescope, Download, Info, X, Map, Heart } from 'lucide-react';
 import { ApodData } from '../../types/apod';
 import { GlassCard } from '../UI/GlassCard';
 import { CosmicButton } from '../UI/CosmicButton';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useApod } from '../../context/ApodContext';
 
 interface InfoSectionProps {
   apod: ApodData;
@@ -12,7 +13,9 @@ interface InfoSectionProps {
 }
 
 export const InfoSection: React.FC<InfoSectionProps> = ({ apod, onFetchRandom, onToggleMap }) => {
+  const { toggleFavorite, isFavorite } = useApod();
   const [showDetails, setShowDetails] = useState(false);
+  const favorited = isFavorite(apod.date);
 
   return (
     <GlassCard className="pointer-events-auto max-w-sm w-full flex flex-col gap-4 p-5 backdrop-blur-md bg-black/40 border-white/10">
@@ -90,6 +93,14 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ apod, onFetchRandom, o
         <CosmicButton variant="secondary" onClick={onToggleMap} className="flex-1 py-2 text-xs">
           <Telescope size={14} className="mr-1.5" />
           Map Mode
+        </CosmicButton>
+        <CosmicButton
+          variant="secondary"
+          onClick={() => toggleFavorite(apod)}
+          className="flex-none px-3 py-2"
+          aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
+        >
+          <Heart size={14} className={favorited ? 'text-red-500 fill-red-500' : 'text-white/70'} />
         </CosmicButton>
         <CosmicButton
           variant="secondary"

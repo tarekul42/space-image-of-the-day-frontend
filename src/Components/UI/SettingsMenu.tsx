@@ -1,22 +1,27 @@
 import React from 'react';
 import { useApod } from '../../context/ApodContext';
-import { Globe, Settings2 } from 'lucide-react';
+import { Globe, Palette, Settings2 } from 'lucide-react';
+import { THEMES, THEME_LABELS } from '../../utils/settings';
 
 export const SettingsMenu: React.FC = () => {
-  const { language, setLanguage, allowLowRes, setAllowLowRes } = useApod();
+  const { language, setLanguage, allowLowRes, setAllowLowRes, theme, setTheme } = useApod();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setLanguage(e.target.value);
   };
 
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTheme(e.target.value as (typeof THEMES)[number]);
+  };
+
   return (
     <div className="absolute top-4 right-4 z-50 flex flex-col items-end gap-2">
-      <div className="flex items-center bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 shadow-lg hover:bg-black/60 transition-colors">
-        <Globe size={14} className="text-white/70 mr-2" />
+      <div className="flex items-center theme-surface backdrop-blur-md border rounded-full px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity">
+        <Globe size={14} className="theme-text-muted mr-2" />
         <select
           value={language}
           onChange={handleLanguageChange}
-          className="bg-transparent text-white/90 text-xs font-medium focus:outline-none appearance-none cursor-pointer"
+          className="bg-transparent theme-text text-xs font-medium focus:outline-none appearance-none cursor-pointer"
           aria-label="Select Language"
         >
           <option value="en" className="bg-[#1a1a1f] text-white">
@@ -55,9 +60,25 @@ export const SettingsMenu: React.FC = () => {
         </select>
       </div>
 
-      <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 shadow-lg hover:bg-black/60 transition-colors">
-        <Settings2 size={14} className="text-white/70" />
-        <span className="text-white/90 text-xs font-medium">Allow Low-Res</span>
+      <div className="flex items-center gap-2 theme-surface backdrop-blur-md border rounded-full px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity">
+        <Palette size={14} className="theme-text-muted" />
+        <select
+          value={theme}
+          onChange={handleThemeChange}
+          className="bg-transparent theme-text text-xs font-medium focus:outline-none appearance-none cursor-pointer"
+          aria-label="Select Theme"
+        >
+          {THEMES.map((t) => (
+            <option key={t} value={t} className="bg-[#1a1a1f] text-white">
+              {THEME_LABELS[t]}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2 theme-surface backdrop-blur-md border rounded-full px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity">
+        <Settings2 size={14} className="theme-text-muted" />
+        <span className="theme-text text-xs font-medium">Allow Low-Res</span>
         <label className="relative inline-flex items-center cursor-pointer ml-1">
           <input
             type="checkbox"

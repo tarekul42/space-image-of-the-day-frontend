@@ -29,11 +29,13 @@ export async function fetchApodRange(
   start_date: string,
   end_date: string,
   lang?: string,
+  translate: boolean = true,
 ): Promise<ApodData[]> {
   const url = new URL(`${BACKEND_APOD_URL}/range`);
   url.searchParams.append('start_date', start_date);
   url.searchParams.append('end_date', end_date);
   if (lang) url.searchParams.append('lang', lang);
+  url.searchParams.append('translate', translate ? 'true' : 'false');
   const response = await fetch(url.toString());
   if (!response.ok) throw new Error('Failed to fetch weekly APODs');
   const result = await response.json();

@@ -12,7 +12,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({ children, className, anima
   const content = (
     <div
       className={cn(
-        'relative overflow-hidden bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 shadow-2xl',
+        'relative overflow-hidden theme-surface backdrop-blur-3xl border rounded-3xl p-8 shadow-2xl',
         className,
       )}
     >

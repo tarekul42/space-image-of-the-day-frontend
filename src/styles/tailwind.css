@@ -12,7 +12,9 @@
 
 @layer base {
   body {
-    @apply bg-cosmic-bg text-white font-sans antialiased overflow-hidden selection:bg-blue-500/30;
+    @apply font-sans antialiased overflow-hidden selection:bg-blue-500/30;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
   }
 }
 

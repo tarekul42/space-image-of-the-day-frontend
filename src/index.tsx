@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, GalleryVertical } from 'lucide-react';
 import './styles/tailwind.css';
+import './styles/theme.css';
 import { ApodProvider, useApod } from './context/ApodContext';
 import { StarField } from './Components/Discovery/StarField';
 import { ApodDisplay } from './Components/Discovery/ApodDisplay';

@@ -6,6 +6,7 @@ import { ErrorView } from './ErrorView';
 import { MediaSection } from './MediaSection';
 import { InfoSection } from './InfoSection';
 import { SettingsMenu } from '../UI/SettingsMenu';
+import { FirstContact } from '../UI/FirstContact';
 import { matchCatalogObjects } from '../../utils/catalogMatch';
 import { COSMIC_CATALOG } from '../../data/catalog';
 
@@ -57,6 +58,10 @@ export const ApodDisplay: React.FC = () => {
                   onFetchRandom={() => fetchApod('FETCH_RANDOM')}
                   onToggleMap={() => openStarMap(locatedObjects)}
                 />
+              </div>
+
+              <div className="absolute bottom-3 inset-x-0 z-[60] flex justify-center pointer-events-none">
+                <FirstContact />
               </div>
             </motion.div>
           )

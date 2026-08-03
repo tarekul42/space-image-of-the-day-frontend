@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './styles/theme.css';
 import browser from './browser';
 import { getSettings, updateSettings } from './services/settings.service';
-import { SearchEngine, SEARCH_ENGINES, SEARCH_ENGINE_LABELS } from './utils/settings';
+import {
+  SearchEngine,
+  SEARCH_ENGINES,
+  SEARCH_ENGINE_LABELS,
+  Theme,
+  THEMES,
+  THEME_LABELS,
+} from './utils/settings';
+import { applyTheme } from './utils/theme';
 
 const LANGUAGES: { value: string; label: string }[] = [
   { value: 'en', label: 'English' },
@@ -26,6 +35,7 @@ const OptionsPage: React.FC = () => {
   const [allowLowRes, setAllowLowRes] = useState(false);
   const [language, setLanguage] = useState('en');
   const [searchEngine, setSearchEngine] = useState<SearchEngine>('google');
+  const [theme, setTheme] = useState<Theme>('cosmic');
   const [cacheSize, setCacheSize] = useState<string>('0 KB');
   const [saved, setSaved] = useState(false);
 
@@ -37,10 +47,16 @@ const OptionsPage: React.FC = () => {
       setAllowLowRes(settings.allowLowRes);
       setLanguage(settings.language);
       setSearchEngine(settings.searchEngine);
+      setTheme(settings.theme);
+      applyTheme(settings.theme);
     });
 
     calculateCacheSize();
   }, []);
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   const calculateCacheSize = () => {
     browser.storage.local.getBytesInUse(null).then((bytes: number) => {
@@ -56,6 +72,7 @@ const OptionsPage: React.FC = () => {
       allowLowRes,
       language,
       searchEngine,
+      theme,
     }).then(() => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -110,6 +127,17 @@ const OptionsPage: React.FC = () => {
               ))}
             </select>
             <p className="hint">Cosmic descriptions are translated server-side.</p>
+          </div>
+          <div className="option-item">
+            <label htmlFor="theme">Theme</label>
+            <select id="theme" value={theme} onChange={(e) => setTheme(e.target.value as Theme)}>
+              {THEMES.map((t) => (
+                <option key={t} value={t}>
+                  {THEME_LABELS[t]}
+                </option>
+              ))}
+            </select>
+            <p className="hint">A gentle set of curated light and dark visual themes.</p>
           </div>
           <div className="option-item toggle-item">
             <label>

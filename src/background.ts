@@ -106,6 +106,7 @@ browser.runtime.onMessage.addListener(
       allowLowRes?: boolean;
       startDate?: string;
       endDate?: string;
+      translate?: boolean;
     };
 
     // Use a pattern that ensures we ALWAYS return a promise or false.
@@ -121,7 +122,7 @@ browser.runtime.onMessage.addListener(
       case 'FETCH_TOP_SITES':
         return handleFetchTopSites();
       case 'FETCH_RANGE':
-        return handleFetchRange(req.startDate, req.endDate, req.lang);
+        return handleFetchRange(req.startDate, req.endDate, req.lang, req.translate);
       default:
         return false; // Not a known message type
     }
@@ -132,9 +133,10 @@ async function handleFetchRange(
   startDate?: string,
   endDate?: string,
   lang?: string,
+  translate?: boolean,
 ): Promise<{ data: ApodData[]; fromCache?: boolean }> {
   try {
-    const data = await fetchApodRange(startDate ?? '', endDate ?? '', lang);
+    const data = await fetchApodRange(startDate ?? '', endDate ?? '', lang, translate);
     return { data, fromCache: false };
   } catch {
     // Offline fallback: surface any cached APODs within the requested window.

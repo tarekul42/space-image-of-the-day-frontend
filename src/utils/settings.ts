@@ -5,6 +5,7 @@
 
 export type SearchEngine = 'google' | 'bing' | 'duckduckgo';
 export type ViewMode = 'apod' | 'dashboard' | 'gallery';
+export type Theme = 'cosmic' | 'nebula' | 'aurora' | 'daylight';
 
 export interface Settings {
   language: string;
@@ -14,6 +15,7 @@ export interface Settings {
   highContrast: boolean;
   viewMode: ViewMode;
   searchEngine: SearchEngine;
+  theme: Theme;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -24,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highContrast: false,
   viewMode: 'apod',
   searchEngine: 'google',
+  theme: 'cosmic',
 };
 
 export type PartialSettings = Partial<Settings>;
@@ -68,6 +71,15 @@ export const SEARCH_ENGINE_LABELS: Record<SearchEngine, string> = {
   google: 'Google',
   bing: 'Bing',
   duckduckgo: 'DuckDuckGo',
+};
+
+export const THEMES: Theme[] = ['cosmic', 'nebula', 'aurora', 'daylight'];
+
+export const THEME_LABELS: Record<Theme, string> = {
+  cosmic: 'Cosmic',
+  nebula: 'Nebula',
+  aurora: 'Aurora',
+  daylight: 'Daylight',
 };
 
 /** Build a search URL for a given engine and query (falls back to Google). */

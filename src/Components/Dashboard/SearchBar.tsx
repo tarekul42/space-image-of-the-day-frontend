@@ -89,7 +89,7 @@ export const SearchBar: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="relative w-full max-w-2xl mx-auto"
     >
-      <div className="relative flex items-center bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl hover:border-white/20 transition-colors group">
+      <div className="relative flex items-center theme-surface backdrop-blur-3xl border rounded-3xl shadow-2xl hover:border-white/20 transition-colors group">
         <Search className="absolute left-5 w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" />
         <input
           ref={inputRef}
@@ -128,7 +128,7 @@ export const SearchBar: React.FC = () => {
         <div
           id="cosmic-suggestions"
           role="listbox"
-          className="absolute top-full mt-2 w-full rounded-3xl bg-[#121218]/95 backdrop-blur-3xl border border-white/10 shadow-2xl overflow-hidden z-50"
+          className="absolute top-full mt-2 w-full rounded-3xl theme-surface backdrop-blur-3xl border shadow-2xl overflow-hidden z-50"
         >
           <div className="px-4 pt-3 pb-1 text-[9px] font-bold uppercase tracking-widest text-blue-300/60">
             Cosmic objects
