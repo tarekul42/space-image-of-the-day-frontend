@@ -6,7 +6,7 @@
   "content_security_policy": {
     "extension_pages": "default-src 'self'; img-src 'self' https://apod.nasa.gov https://www.nasa.gov https://api.nasa.gov; connect-src 'self' https://api.nasa.gov https://apod.nasa.gov https://simbad.cds.unistra.fr http://localhost:5000; style-src 'self' 'unsafe-inline'"
   },
-  "permissions": ["storage", "unlimitedStorage", "topSites"],
+  "permissions": ["storage", "unlimitedStorage", "topSites", "geolocation"],
   "host_permissions": [
     "http://localhost:5000/*",
     "https://api.nasa.gov/*",

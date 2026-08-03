@@ -7,6 +7,7 @@ import {
 import { getSettings, updateSettings } from '../services/settings.service';
 import { ViewMode, detectBrowserLanguage } from '../utils/settings';
 import { enrichData } from '../utils/enrichment';
+import { CosmicObject } from '../data/catalog';
 import browser from '../browser';
 
 interface ApodContextType {
@@ -25,6 +26,10 @@ interface ApodContextType {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
   selectApod: (apod: ApodData) => void;
+  isStarMapOpen: boolean;
+  starMapObjects: CosmicObject[];
+  openStarMap: (objects?: CosmicObject[]) => void;
+  closeStarMap: () => void;
 }
 
 const ApodContext = createContext<ApodContextType | undefined>(undefined);
@@ -54,6 +59,15 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [highContrast, setHighContrast] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('apod');
+  const [isStarMapOpen, setIsStarMapOpen] = useState(false);
+  const [starMapObjects, setStarMapObjects] = useState<CosmicObject[]>([]);
+
+  const openStarMap = useCallback((objects: CosmicObject[] = []) => {
+    setStarMapObjects(objects);
+    setIsStarMapOpen(true);
+  }, []);
+
+  const closeStarMap = useCallback(() => setIsStarMapOpen(false), []);
 
   const isInitialMount = useRef(true);
   const prevLanguage = useRef(language);
@@ -199,6 +213,10 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setApod(a);
           setViewMode('apod');
         },
+        isStarMapOpen,
+        starMapObjects,
+        openStarMap,
+        closeStarMap,
       }}
     >
       {children}

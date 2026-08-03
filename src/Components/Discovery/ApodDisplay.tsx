@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApod } from '../../context/ApodContext';
 import { LoadingView } from './LoadingView';
@@ -6,11 +6,16 @@ import { ErrorView } from './ErrorView';
 import { MediaSection } from './MediaSection';
 import { InfoSection } from './InfoSection';
 import { SettingsMenu } from '../UI/SettingsMenu';
-import { StarMapOverlay } from './StarMapOverlay';
+import { matchCatalogObjects } from '../../utils/catalogMatch';
+import { COSMIC_CATALOG } from '../../data/catalog';
 
 export const ApodDisplay: React.FC = () => {
-  const { apod, loading, error, fetchApod } = useApod();
-  const [isMapOpen, setIsMapOpen] = React.useState(false);
+  const { apod, loading, error, fetchApod, openStarMap } = useApod();
+
+  const locatedObjects = useMemo(
+    () => (apod ? matchCatalogObjects(apod.title, apod.explanation, COSMIC_CATALOG) : []),
+    [apod],
+  );
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
@@ -33,7 +38,6 @@ export const ApodDisplay: React.FC = () => {
               className="absolute inset-0 w-full h-full"
             >
               <SettingsMenu />
-              <StarMapOverlay isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} />
               <MediaSection apod={apod} />
 
               {/* Subtle loading indicator for background updates (like translations) */}
@@ -51,7 +55,7 @@ export const ApodDisplay: React.FC = () => {
                 <InfoSection
                   apod={apod}
                   onFetchRandom={() => fetchApod('FETCH_RANDOM')}
-                  onToggleMap={() => setIsMapOpen(true)}
+                  onToggleMap={() => openStarMap(locatedObjects)}
                 />
               </div>
             </motion.div>

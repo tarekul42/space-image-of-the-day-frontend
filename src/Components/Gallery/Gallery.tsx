@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Loader2, RefreshCw, WifiOff } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2, RefreshCw, Telescope, WifiOff } from 'lucide-react';
 import { useApod } from '../../context/ApodContext';
 import { fetchApodRange } from '../../services/apod.service';
+import { matchCatalogObjects } from '../../utils/catalogMatch';
+import { COSMIC_CATALOG } from '../../data/catalog';
 import browser from '../../browser';
 import type { ApodData } from '../../types/apod';
 
 export const Gallery: React.FC = () => {
-  const { setViewMode, selectApod, language } = useApod();
+  const { setViewMode, selectApod, language, openStarMap } = useApod();
   const [items, setItems] = useState<ApodData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,13 +111,33 @@ export const Gallery: React.FC = () => {
                 whileHover={{ scale: 1.02, y: -4 }}
                 className="relative group rounded-2xl overflow-hidden bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all duration-300 text-left"
               >
-                <div className="aspect-[4/3] overflow-hidden bg-[#0a0a0c]">
+                <div className="aspect-[4/3] overflow-hidden bg-[#0a0a0c] relative">
                   <img
                     src={item.url}
                     alt={item.title}
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                   />
+                  {(() => {
+                    const objects = matchCatalogObjects(
+                      item.title,
+                      item.explanation,
+                      COSMIC_CATALOG,
+                    );
+                    return objects.length > 0 ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStarMap(objects);
+                        }}
+                        title={`See ${objects.length} object${objects.length > 1 ? 's' : ''} in the night sky`}
+                        className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-300/30 text-amber-300/90 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity hover:bg-amber-400/20"
+                      >
+                        <Telescope className="w-3 h-3" />
+                        {objects.length} in sky
+                      </button>
+                    ) : null;
+                  })()}
                 </div>
                 <div className="p-3">
                   <div className="flex items-center gap-1.5 text-[10px] text-blue-300/60 font-mono mb-1">

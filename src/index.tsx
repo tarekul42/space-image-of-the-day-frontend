@@ -8,9 +8,10 @@ import { StarField } from './Components/Discovery/StarField';
 import { ApodDisplay } from './Components/Discovery/ApodDisplay';
 import { Dashboard } from './Components/Dashboard/Dashboard';
 import { Gallery } from './Components/Gallery/Gallery';
+import { StarMapOverlay } from './Components/Discovery/StarMapOverlay';
 
 const App: React.FC = () => {
-  const { viewMode, setViewMode } = useApod();
+  const { viewMode, setViewMode, isStarMapOpen, closeStarMap } = useApod();
 
   return (
     <div className="relative w-full h-full min-h-screen">
@@ -67,6 +68,8 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      <StarMapOverlay isOpen={isStarMapOpen} onClose={closeStarMap} />
     </div>
   );
 };
