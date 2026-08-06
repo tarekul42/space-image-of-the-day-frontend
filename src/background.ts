@@ -119,8 +119,6 @@ browser.runtime.onMessage.addListener(
         return handleFetchRandom(req.lang, req.allowLowRes);
       case 'RESET_CACHE':
         return handleResetCache();
-      case 'FETCH_TOP_SITES':
-        return handleFetchTopSites();
       case 'FETCH_RANGE':
         return handleFetchRange(req.startDate, req.endDate, req.lang, req.translate);
       default:
@@ -342,22 +340,6 @@ async function fetchAndValidateRandomApod(lang?: string, allowLowRes?: boolean) 
   const data = rawData.url ? await getImageData(rawData.hdurl || rawData.url) : null;
   if (data?.blob) await saveImageBlob(rawData.date, data.blob);
   return enrichData({ ...rawData, width: data?.width, height: data?.height });
-}
-
-async function handleFetchTopSites() {
-  try {
-    if (typeof chrome !== 'undefined' && chrome.topSites) {
-      const sites = await chrome.topSites.get();
-      const data = sites.map((s: { title: string; url: string }) => ({
-        title: s.title || new URL(s.url).hostname,
-        url: s.url,
-      }));
-      return { data };
-    }
-    return { data: [] };
-  } catch {
-    return { data: [] };
-  }
 }
 
 // ─── Lifecycle ───────────────────────────────────────────────

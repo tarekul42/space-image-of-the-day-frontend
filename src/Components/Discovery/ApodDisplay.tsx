@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApod } from '../../context/ApodContext';
 import { LoadingView } from './LoadingView';
@@ -7,11 +7,14 @@ import { MediaSection } from './MediaSection';
 import { InfoSection } from './InfoSection';
 import { SettingsMenu } from '../UI/SettingsMenu';
 import { FirstContact } from '../UI/FirstContact';
+import { DeepDiveModal } from './DeepDiveModal';
+import { OnboardingOverlay } from '../UI/OnboardingOverlay';
 import { matchCatalogObjects } from '../../utils/catalogMatch';
-import { COSMIC_CATALOG } from '../../data/catalog';
+import { COSMIC_CATALOG, CosmicObject } from '../../data/catalog';
 
 export const ApodDisplay: React.FC = () => {
   const { apod, loading, error, fetchApod, openStarMap } = useApod();
+  const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(false);
 
   const locatedObjects = useMemo(
     () => (apod ? matchCatalogObjects(apod.title, apod.explanation, COSMIC_CATALOG) : []),
@@ -20,6 +23,8 @@ export const ApodDisplay: React.FC = () => {
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <OnboardingOverlay />
+
       <AnimatePresence mode="popLayout">
         {error ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50">
@@ -57,12 +62,20 @@ export const ApodDisplay: React.FC = () => {
                   apod={apod}
                   onFetchRandom={() => fetchApod('FETCH_RANDOM')}
                   onToggleMap={() => openStarMap(locatedObjects)}
+                  onOpenDeepDive={() => setIsDeepDiveOpen(true)}
                 />
               </div>
 
               <div className="absolute bottom-3 inset-x-0 z-[60] flex justify-center pointer-events-none">
                 <FirstContact />
               </div>
+
+              <DeepDiveModal
+                isOpen={isDeepDiveOpen}
+                onClose={() => setIsDeepDiveOpen(false)}
+                apod={apod}
+                onLocateOnMap={(objects: CosmicObject[]) => openStarMap(objects)}
+              />
             </motion.div>
           )
         )}

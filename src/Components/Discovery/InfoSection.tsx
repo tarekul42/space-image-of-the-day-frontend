@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Telescope, Download, Info, X, Map, Heart } from 'lucide-react';
+import { Telescope, Download, Info, X, Map, Heart, Compass } from 'lucide-react';
 import { ApodData } from '../../types/apod';
 import { GlassCard } from '../UI/GlassCard';
 import { CosmicButton } from '../UI/CosmicButton';
@@ -10,9 +10,15 @@ interface InfoSectionProps {
   apod: ApodData;
   onFetchRandom: () => void;
   onToggleMap: () => void;
+  onOpenDeepDive?: () => void;
 }
 
-export const InfoSection: React.FC<InfoSectionProps> = ({ apod, onFetchRandom, onToggleMap }) => {
+export const InfoSection: React.FC<InfoSectionProps> = ({
+  apod,
+  onFetchRandom,
+  onToggleMap,
+  onOpenDeepDive,
+}) => {
   const { toggleFavorite, isFavorite } = useApod();
   const [showDetails, setShowDetails] = useState(false);
   const favorited = isFavorite(apod.date);
@@ -94,6 +100,17 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ apod, onFetchRandom, o
           <Telescope size={14} className="mr-1.5" />
           Map Mode
         </CosmicButton>
+        {onOpenDeepDive && (
+          <CosmicButton
+            variant="secondary"
+            onClick={onOpenDeepDive}
+            className="flex-none px-3 py-2 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/20"
+            aria-label="Deep Dive SIMBAD/NED Data"
+            title="Deep Dive"
+          >
+            <Compass size={14} />
+          </CosmicButton>
+        )}
         <CosmicButton
           variant="secondary"
           onClick={() => toggleFavorite(apod)}

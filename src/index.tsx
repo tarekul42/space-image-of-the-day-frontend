@@ -1,14 +1,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, GalleryVertical } from 'lucide-react';
+import { GalleryVertical } from 'lucide-react';
 import './styles/tailwind.css';
 import './styles/theme.css';
 import { ApodProvider, useApod } from './context/ApodContext';
 import { StarField } from './Components/Discovery/StarField';
 import { ApodDisplay } from './Components/Discovery/ApodDisplay';
 
-const Dashboard = React.lazy(() => import('./Components/Dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
 const Gallery = React.lazy(() => import('./Components/Gallery/Gallery').then(m => ({ default: m.Gallery })));
 const StarMapOverlay = React.lazy(() => import('./Components/Discovery/StarMapOverlay').then(m => ({ default: m.StarMapOverlay })));
 
@@ -32,16 +31,6 @@ const App: React.FC = () => {
               >
                 <ApodDisplay />
               </motion.div>
-            ) : viewMode === 'dashboard' ? (
-              <motion.div
-                key="dashboard"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0"
-              >
-                <Dashboard />
-              </motion.div>
             ) : (
               <motion.div
                 key="gallery"
@@ -62,13 +51,7 @@ const App: React.FC = () => {
               onClick={() => setViewMode('gallery')}
               className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-3xl border border-white/10 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 shadow-xl text-sm"
             >
-              <GalleryVertical className="w-4 h-4" /> Week
-            </button>
-            <button
-              onClick={() => setViewMode('dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-3xl border border-white/10 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-200 shadow-xl text-sm"
-            >
-              <LayoutDashboard className="w-4 h-4" /> Dashboard
+              <GalleryVertical className="w-4 h-4" /> Collection
             </button>
           </div>
         )}
