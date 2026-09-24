@@ -159,7 +159,9 @@ function imageCandidateUrls(apod: ApodData): string[] {
 async function rememberRecentDate(date: string): Promise<void> {
   try {
     const result = await browser.storage.local.get(RECENT_DATES_KEY);
-    const recent: string[] = Array.isArray(result[RECENT_DATES_KEY]) ? result[RECENT_DATES_KEY] : [];
+    const recent: string[] = Array.isArray(result[RECENT_DATES_KEY])
+      ? result[RECENT_DATES_KEY]
+      : [];
     const next = [...new Set([date, ...recent])].slice(0, CLEANUP_KEEP_RECENT_DAYS);
     await browser.storage.local.set({ [RECENT_DATES_KEY]: next });
   } catch {
@@ -272,9 +274,7 @@ async function handleResetCache() {
       // Ignore per-image failures during reset
     }
   }
-  for (let i = 0; i < 3; i++) {
-    refillBufferIfNeeded();
-  }
+  void scheduleRefill();
   return { success: true };
 }
 
@@ -376,7 +376,7 @@ async function scheduleRefill(
     await browser.alarms.create(ALARM_REFILL, { when: Date.now() + delayMs });
   } catch (err) {
     console.warn('[refill] Alarm scheduling failed; running inline:', err);
-    void refillBufferIfNeeded(lang, allowLowRes);
+    startRefill(lang, allowLowRes);
   }
 }
 
@@ -596,7 +596,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
           }
           await new Promise((r) => setTimeout(r, 500));
         } catch (err) {
-          console.error`[install] Failed to pre-fetch blob:`;
           console.error('[install] Failed to pre-fetch blob:', err);
         }
       }

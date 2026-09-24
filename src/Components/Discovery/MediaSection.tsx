@@ -3,10 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ApodData } from '../../types/apod';
 import { StarField } from './StarField';
 import { getImageBlob } from '../../utils/storage';
+import { isSaveData } from '../../utils/http';
 import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT } from '../../constants';
 
 interface MediaSectionProps {
   apod: ApodData;
+}
+
+/** Standard-res url is far lighter than hdurl; prefer it on data-saver. */
+function pickDisplayUrl(apod: ApodData): string {
+  if (isSaveData()) return apod.url || apod.hdurl || '';
+  return apod.hdurl || apod.url || '';
 }
 
 export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
@@ -26,13 +33,15 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
         return;
       }
 
+      const remoteUrl = pickDisplayUrl(apod);
+
       try {
         // 1. Try to get blob from IndexedDB
         const blob = await getImageBlob(apod.date);
 
         // Safety: ensure blob is not empty (ORB check)
         const isValidBlob = blob && blob.size > 1024;
-        const sourceUrl = isValidBlob ? URL.createObjectURL(blob) : apod.hdurl || apod.url;
+        const sourceUrl = isValidBlob ? URL.createObjectURL(blob) : remoteUrl;
         if (isValidBlob) objectUrl = sourceUrl;
 
         // 2. Pre-decode the image
@@ -49,7 +58,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
           console.warn('Decoding failed, falling back to remote URL:', decodeErr);
           // If decoding failed and we were using a blob, try remote URL instead
           if (isValidBlob && !isCancelled) {
-            setImgUrl(apod.hdurl || apod.url);
+            setImgUrl(remoteUrl);
             setIsReady(true);
           } else if (!isCancelled) {
             // If already remote, just show it anyway (browser might handle it better)
@@ -60,7 +69,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
       } catch (err) {
         console.error('Failed to load media:', err);
         if (!isCancelled) {
-          setImgUrl(apod.hdurl || apod.url);
+          setImgUrl(remoteUrl);
           setIsReady(true);
         }
       }
