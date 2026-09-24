@@ -1,6 +1,6 @@
+import { NASA_API_TIMEOUT_MS } from '../constants';
 import { ApodData } from '../types/apod';
 import { fetchWithTimeout } from '../utils/http';
-import { NASA_API_TIMEOUT_MS } from '../constants';
 
 const BACKEND_APOD_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1/apod';
 

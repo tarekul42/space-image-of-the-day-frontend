@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { getFactOfTheDay, COSMIC_FACTS } from './facts';
+import { describe, expect, it } from 'vitest';
+import { COSMIC_FACTS, getFactOfTheDay } from './facts';
 
 describe('getFactOfTheDay', () => {
   it('returns one of the curated facts', () => {

@@ -35,9 +35,15 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
   const recommendations = useMemo(() => {
     const currentIds = new Set(matchedObjects.map((o) => o.id));
     const sameConstellation = COSMIC_CATALOG.filter(
-      (o) => !currentIds.has(o.id) && apod.constellation && o.constellation.toLowerCase() === apod.constellation.toLowerCase(),
+      (o) =>
+        !currentIds.has(o.id) &&
+        apod.constellation &&
+        o.constellation.toLowerCase() === apod.constellation.toLowerCase(),
     );
-    const pool = sameConstellation.length >= 3 ? sameConstellation : COSMIC_CATALOG.filter((o) => !currentIds.has(o.id));
+    const pool =
+      sameConstellation.length >= 3
+        ? sameConstellation
+        : COSMIC_CATALOG.filter((o) => !currentIds.has(o.id));
     return pool.slice(0, 3);
   }, [matchedObjects, apod.constellation]);
 
@@ -96,7 +102,10 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                     className="flex items-center justify-between p-3.5 rounded-2xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/20 hover:border-cyan-400/40 text-cyan-200 transition-all text-xs font-medium group"
                   >
                     <span>SIMBAD Astronomical Database</span>
-                    <ExternalLink size={13} className="text-cyan-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ExternalLink
+                      size={13}
+                      className="text-cyan-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                    />
                   </a>
 
                   <a
@@ -106,7 +115,10 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                     className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/20 hover:border-indigo-400/40 text-indigo-200 transition-all text-xs font-medium group"
                   >
                     <span>NASA / IPAC Extragalactic (NED)</span>
-                    <ExternalLink size={13} className="text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ExternalLink
+                      size={13}
+                      className="text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                    />
                   </a>
 
                   <a
@@ -116,7 +128,10 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                     className="flex items-center justify-between p-3.5 rounded-2xl bg-blue-950/40 hover:bg-blue-900/50 border border-blue-500/20 hover:border-blue-400/40 text-blue-200 transition-all text-xs font-medium group"
                   >
                     <span>Official NASA APOD Page</span>
-                    <ExternalLink size={13} className="text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ExternalLink
+                      size={13}
+                      className="text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                    />
                   </a>
                 </div>
               </div>
@@ -145,7 +160,8 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
 
                 {matchedObjects.length === 0 ? (
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-white/60 text-xs italic text-center">
-                    No explicit catalogue entry matched this APOD text. Explore related celestial targets below.
+                    No explicit catalogue entry matched this APOD text. Explore related celestial
+                    targets below.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -215,8 +231,13 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                       className="p-3.5 rounded-2xl bg-purple-950/30 hover:bg-purple-900/40 border border-purple-500/20 hover:border-purple-400/40 transition-all cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-purple-200 group-hover:text-purple-100">{rec.name}</span>
-                        <Star size={12} className="text-purple-400 group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-xs text-purple-200 group-hover:text-purple-100">
+                          {rec.name}
+                        </span>
+                        <Star
+                          size={12}
+                          className="text-purple-400 group-hover:scale-110 transition-transform"
+                        />
                       </div>
                       <p className="text-[10px] text-white/50 font-mono mt-1">
                         {rec.constellation} • {rec.objectType}

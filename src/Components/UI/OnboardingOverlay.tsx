@@ -71,7 +71,8 @@ export const OnboardingOverlay: React.FC = () => {
               </h1>
 
               <p className="text-white/70 text-sm leading-relaxed mb-8 max-w-md">
-                Immerse yourself in NASA Astronomy Pictures, interactive live star maps, SIMBAD astronomical enrichment, and deep cosmic exploration.
+                Immerse yourself in NASA Astronomy Pictures, interactive live star maps, SIMBAD
+                astronomical enrichment, and deep cosmic exploration.
               </p>
 
               <CosmicButton

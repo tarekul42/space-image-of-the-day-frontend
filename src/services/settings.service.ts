@@ -5,11 +5,11 @@
  */
 import browser from '../browser';
 import {
-  Settings,
   DEFAULT_SETTINGS,
-  mergeSettings,
   detectBrowserLanguage,
+  mergeSettings,
   PartialSettings,
+  Settings,
 } from '../utils/settings';
 
 const SETTINGS_KEY = 'settings';

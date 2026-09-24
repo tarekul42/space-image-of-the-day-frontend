@@ -245,10 +245,7 @@ export const ApodProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ) {
         setTheme(next.theme);
       }
-      if (
-        next.viewMode === 'apod' ||
-        next.viewMode === 'gallery'
-      ) {
+      if (next.viewMode === 'apod' || next.viewMode === 'gallery') {
         setViewMode(next.viewMode);
       }
     };
