@@ -5,13 +5,16 @@ export interface SimbadResult {
   more_info_url: string;
 }
 
+import { SIMBAD_TIMEOUT_MS } from '../constants';
+import { fetchWithTimeout } from '../utils/http';
+
 export async function querySimbad(objectName: string): Promise<SimbadResult | null> {
   if (!objectName || objectName.trim().length < 2) return null;
 
   try {
     const params = new URLSearchParams({ Ident: objectName });
     const url = `${SIMBAD_URL}?${params.toString()}&NbIdent=1&VOTableExport=on`;
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, {}, SIMBAD_TIMEOUT_MS);
     if (!response.ok) return null;
     const text = await response.text();
 

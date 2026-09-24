@@ -33,11 +33,28 @@ function copyManifest(env) {
         if (env.VITE_API_BASE_URL) {
           const apiUrl = new URL(env.VITE_API_BASE_URL);
           const origin = `${apiUrl.protocol}//${apiUrl.host}/*`;
+          const cspOrigin = `${apiUrl.protocol}//${apiUrl.host}`;
 
           if (!manifest.host_permissions) manifest.host_permissions = [];
           if (!manifest.host_permissions.includes(origin)) {
             manifest.host_permissions.push(origin);
           }
+
+          const csp = manifest.content_security_policy;
+          if (csp && typeof csp.extension_pages === 'string') {
+            const directives = csp.extension_pages.split(';').map((d) => d.trim());
+            const updated = directives.map((directive) => {
+              if (directive.startsWith('connect-src') && !directive.includes(cspOrigin)) {
+                return `${directive} ${cspOrigin}`;
+              }
+              return directive;
+            });
+            if (!directives.some((d) => d.startsWith('connect-src'))) {
+              updated.push(`connect-src 'self' ${cspOrigin}`);
+            }
+            csp.extension_pages = updated.join('; ');
+          }
+
           console.log(`[copy-manifest] Injected host_permission: ${origin}`);
         }
 

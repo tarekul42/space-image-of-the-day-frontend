@@ -1,4 +1,6 @@
 import { ApodData } from '../types/apod';
+import { fetchWithTimeout } from '../utils/http';
+import { NASA_API_TIMEOUT_MS } from '../constants';
 
 const BACKEND_APOD_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1/apod';
 
@@ -7,7 +9,7 @@ export async function fetchApod(date?: string, lang?: string): Promise<ApodData>
   if (date) url.searchParams.append('date', date);
   if (lang) url.searchParams.append('lang', lang);
 
-  const response = await fetch(url.toString());
+  const response = await fetchWithTimeout(url.toString(), {}, NASA_API_TIMEOUT_MS);
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Backend API error (${response.status}) at ${url.toString()}: ${errorText}`);
@@ -19,7 +21,7 @@ export async function fetchApod(date?: string, lang?: string): Promise<ApodData>
 export async function fetchRandomApod(lang?: string): Promise<ApodData> {
   const url = new URL(`${BACKEND_APOD_URL}/random`);
   if (lang) url.searchParams.append('lang', lang);
-  const response = await fetch(url.toString());
+  const response = await fetchWithTimeout(url.toString(), {}, NASA_API_TIMEOUT_MS);
   if (!response.ok) throw new Error('Failed to fetch random discovery');
   const result = await response.json();
   return result.data;
@@ -36,7 +38,7 @@ export async function fetchApodRange(
   url.searchParams.append('end_date', end_date);
   if (lang) url.searchParams.append('lang', lang);
   url.searchParams.append('translate', translate ? 'true' : 'false');
-  const response = await fetch(url.toString());
+  const response = await fetchWithTimeout(url.toString(), {}, NASA_API_TIMEOUT_MS);
   if (!response.ok) throw new Error('Failed to fetch weekly APODs');
   const result = await response.json();
   return result.data;
