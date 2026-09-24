@@ -4,7 +4,7 @@ import {
   detectBrowserLanguage,
   mergeSettings,
   resolveSearchUrl,
-} from './settings';
+} from '../settings';
 
 describe('mergeSettings', () => {
   it('merges a patch over defaults without mutating them', () => {

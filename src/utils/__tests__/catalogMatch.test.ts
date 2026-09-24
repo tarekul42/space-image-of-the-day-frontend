@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { COSMIC_CATALOG } from '../data/catalog';
-import { findPrimaryObject, matchCatalogObjects } from './catalogMatch';
+import { COSMIC_CATALOG } from '../../data/catalog';
+import { findPrimaryObject, matchCatalogObjects } from '../catalogMatch';
 
 describe('matchCatalogObjects', () => {
   it('matches a Messier object by its catalog id in the title', () => {

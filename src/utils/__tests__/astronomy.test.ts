@@ -10,7 +10,7 @@ import {
   planetPosition,
   projectToSky,
   resolveObserver,
-} from './astronomy';
+} from '../astronomy';
 
 const J2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
 

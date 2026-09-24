@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ApodData } from '../types/apod';
-import { evictToLimit, popFromBuffer } from './buffer';
+import { ApodData } from '../../types/apod';
+import { evictToLimit, popFromBuffer } from '../buffer';
 
 const make = (date: string): ApodData => ({
   date,

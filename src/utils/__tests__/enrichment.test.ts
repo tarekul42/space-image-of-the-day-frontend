@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractObjectName, inferFromExplanation } from './enrichment';
+import { extractObjectName, inferFromExplanation } from '../enrichment';
 
 describe('extractObjectName', () => {
   it('extracts object name from simple title', () => {

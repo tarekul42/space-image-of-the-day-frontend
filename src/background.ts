@@ -15,7 +15,14 @@ import { ApodData } from './types/apod';
 import { popFromBuffer } from './utils/buffer';
 import { enrichData } from './utils/enrichment';
 import { fetchWithTimeout, isOnline, isSaveData } from './utils/http';
-import { clearOldImages, getAllBlobKeys, saveImageBlob } from './utils/storage';
+import {
+  cleanupKeepList,
+  isAcceptableResolution,
+  makeImageCandidates,
+  pushToBuffer,
+  shouldSkipRecent,
+} from './utils/refill';
+import { clearOldImages, getAllBlobKeys, getImageBlob, saveImageBlob } from './utils/storage';
 
 const BUFFER_KEY = 'random_buffer';
 const PURGE_KEY = 'cache_purge_v2';
@@ -144,18 +151,6 @@ async function getImageData(
   }
 }
 
-/**
- * Ordered candidate URLs to download/probe for an APOD image.
- * The standard `url` (~1024-2048px) is far lighter than `hdurl` (often
- * 10-30MB), so we always prefer it and only fall back to `hdurl`.
- */
-function imageCandidateUrls(apod: ApodData): string[] {
-  const candidates = [apod.url, apod.hdurl].filter(
-    (u): u is string => typeof u === 'string' && u.length > 0,
-  );
-  return [...new Set(candidates)];
-}
-
 async function rememberRecentDate(date: string): Promise<void> {
   try {
     const result = await browser.storage.local.get(RECENT_DATES_KEY);
@@ -231,7 +226,15 @@ async function handleFetchRange(
 async function handleFetchApod(date?: string, lang?: string) {
   try {
     const rawData = await fetchApod(date, lang);
-    const data = rawData.url ? await getImageData(rawData.hdurl || rawData.url) : null;
+
+    // Skip the (heavy) full-res download when this date's blob is already cached.
+    const existingBlob = await getImageBlob(rawData.date);
+    const data =
+      existingBlob && existingBlob.size > 1024
+        ? null
+        : rawData.url
+          ? await getImageData(rawData.hdurl || rawData.url)
+          : null;
     const enriched = await enrichData({
       ...rawData,
       width: data?.width,
@@ -264,14 +267,16 @@ async function handleResetCache() {
   await clearOldImages([]);
   await browser.storage.local.set({ [SEED_CACHE_KEY]: SEED_APODS });
   await browser.storage.local.set({ [BUFFER_KEY]: [...SEED_APODS] });
-  for (const item of SEED_APODS) {
-    try {
-      const data = await getImageData(imageCandidateUrls(item)[0]);
-      if (data?.blob && data.blob.size > 1024) {
-        await saveImageBlob(item.date, data.blob);
+  if (!isSaveData()) {
+    for (const item of SEED_APODS) {
+      try {
+        const data = await getImageData(makeImageCandidates(item.url, item.hdurl)[0]);
+        if (data?.blob && data.blob.size > 1024) {
+          await saveImageBlob(item.date, data.blob);
+        }
+      } catch {
+        // Ignore per-image failures during reset
       }
-    } catch {
-      // Ignore per-image failures during reset
     }
   }
   void scheduleRefill();
@@ -431,14 +436,10 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
       ? freshResult[BUFFER_KEY]
       : [];
 
-    // Guard against duplicate dates already sitting in the buffer.
-    const bufferedDates = freshBuffer.map((item: ApodData) => item.date);
-    if (!bufferedDates.includes(enriched.date)) {
-      if (freshBuffer.length >= BUFFER_LIMIT) {
-        freshBuffer.shift();
-      }
-      freshBuffer.push(enriched);
-      await browser.storage.local.set({ [BUFFER_KEY]: freshBuffer });
+    // Dedupe by date and evict FIFO past the cap; skip the write on a no-op.
+    const nextBuffer = pushToBuffer(freshBuffer, enriched, BUFFER_LIMIT);
+    if (nextBuffer !== freshBuffer) {
+      await browser.storage.local.set({ [BUFFER_KEY]: nextBuffer });
     }
   });
 }
@@ -451,20 +452,18 @@ async function refillBufferIfNeeded(lang?: string, allowLowRes?: boolean) {
 async function performCleanup(buffer: ApodData[]) {
   try {
     const result = await browser.storage.local.get(null);
-    const bufferedDates = buffer.map((item: ApodData) => item.date);
-    const today = new Date().toISOString().split('T')[0];
-    const recentDates = await getRecentDates();
-    const cachedDates = Object.keys(result)
-      .filter((k) => ISO_DATE_KEY.test(k))
-      .sort()
-      .reverse();
-    const keep = new Set<string>([
-      today,
-      ...bufferedDates,
-      ...recentDates,
-      ...cachedDates.slice(0, CLEANUP_KEEP_RECENT_DAYS),
-    ]);
-    await clearOldImages([...keep]);
+    const recents = await getRecentDates();
+    const keep = cleanupKeepList({
+      bufferedDates: buffer.map((item: ApodData) => item.date),
+      today: new Date().toISOString().split('T')[0],
+      recentDates: recents,
+      cachedDates: Object.keys(result)
+        .filter((k) => ISO_DATE_KEY.test(k))
+        .sort()
+        .reverse(),
+      keepRecent: CLEANUP_KEEP_RECENT_DAYS,
+    });
+    await clearOldImages(keep);
   } catch (err) {
     console.error('Cleanup failed', err);
   }
@@ -511,9 +510,7 @@ async function fetchAndValidateRandomApod(lang?: string, allowLowRes?: boolean) 
     // Skip anything we showed recently without burning bandwidth on it,
     // but always accept the final attempt so the buffer is never starved.
     if (
-      attempt < MAX_ATTEMPTS - 1 &&
-      recentDates.length >= REFILL_RECENT_SKIP_LIMIT &&
-      recentDates.includes(rawData.date)
+      shouldSkipRecent(rawData.date, recentDates, attempt, MAX_ATTEMPTS, REFILL_RECENT_SKIP_LIMIT)
     ) {
       await delay(PROBE_RETRY_DELAY_MS);
       continue;
@@ -539,7 +536,7 @@ async function fetchAndValidateRandomApod(lang?: string, allowLowRes?: boolean) 
   // Fallback: accept the best available image so the buffer keeps working
   // even when the pool is full of low-resolution 1990s scans.
   const fallbackRaw = await fetchRandomApod(lang);
-  const fallbackUrl = imageCandidateUrls(fallbackRaw)[0];
+  const fallbackUrl = makeImageCandidates(fallbackRaw.url, fallbackRaw.hdurl)[0];
   const fallbackData = fallbackRaw.media_type === 'image' ? await getImageData(fallbackUrl) : null;
   if (fallbackData?.blob) {
     await saveImageBlob(fallbackRaw.date, fallbackData.blob);
@@ -556,11 +553,18 @@ async function probeCandidates(
   rawData: ApodData,
   allowLowRes?: boolean,
 ): Promise<{ data: { width: number; height: number; blob: Blob } } | null> {
-  for (const url of imageCandidateUrls(rawData)) {
+  for (const url of makeImageCandidates(rawData.url, rawData.hdurl)) {
     const data = await getImageData(url);
     if (!data) continue;
-    const isHighRes = data.width >= MIN_IMAGE_WIDTH && data.height >= MIN_IMAGE_HEIGHT;
-    if (allowLowRes || isHighRes) return { data };
+    if (
+      isAcceptableResolution(data.width, data.height, {
+        minWidth: MIN_IMAGE_WIDTH,
+        minHeight: MIN_IMAGE_HEIGHT,
+        allowLowRes: Boolean(allowLowRes),
+      })
+    ) {
+      return { data };
+    }
   }
   return null;
 }
@@ -590,7 +594,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
     if (!isSaveData()) {
       for (const item of SEED_APODS) {
         try {
-          const data = await getImageData(imageCandidateUrls(item)[0]);
+          const data = await getImageData(makeImageCandidates(item.url, item.hdurl)[0]);
           if (data?.blob && data.blob.size > 1024) {
             await saveImageBlob(item.date, data.blob);
           }
