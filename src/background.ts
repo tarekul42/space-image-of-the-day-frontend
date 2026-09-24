@@ -1,21 +1,21 @@
 import browser from './browser';
-import { fetchApod, fetchRandomApod, fetchApodRange } from './services/apod.service';
-import { ApodData } from './types/apod';
-import { enrichData } from './utils/enrichment';
-import { clearOldImages, getAllBlobKeys, saveImageBlob } from './utils/storage';
-import { popFromBuffer } from './utils/buffer';
-import { fetchWithTimeout, isOnline, isSaveData } from './utils/http';
 import {
-  MIN_IMAGE_WIDTH,
-  MIN_IMAGE_HEIGHT,
-  BUFFER_LIMIT,
-  MAX_REFILL_ATTEMPTS,
-  IMAGE_DOWNLOAD_TIMEOUT_MS,
   ALARM_MAINTAIN_PERIOD_MINUTES,
-  CLEANUP_KEEP_RECENT_DAYS,
+  BUFFER_LIMIT,
   BUFFER_REFILL_DELAY_MS,
+  CLEANUP_KEEP_RECENT_DAYS,
+  IMAGE_DOWNLOAD_TIMEOUT_MS,
+  MAX_REFILL_ATTEMPTS,
+  MIN_IMAGE_HEIGHT,
+  MIN_IMAGE_WIDTH,
   REFILL_RECENT_SKIP_LIMIT,
 } from './constants';
+import { fetchApod, fetchApodRange, fetchRandomApod } from './services/apod.service';
+import { ApodData } from './types/apod';
+import { popFromBuffer } from './utils/buffer';
+import { enrichData } from './utils/enrichment';
+import { fetchWithTimeout, isOnline, isSaveData } from './utils/http';
+import { clearOldImages, getAllBlobKeys, saveImageBlob } from './utils/storage';
 
 const BUFFER_KEY = 'random_buffer';
 const PURGE_KEY = 'cache_purge_v2';

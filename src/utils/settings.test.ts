@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_SETTINGS,
+  detectBrowserLanguage,
   mergeSettings,
   resolveSearchUrl,
-  detectBrowserLanguage,
-  DEFAULT_SETTINGS,
 } from './settings';
 
 describe('mergeSettings', () => {

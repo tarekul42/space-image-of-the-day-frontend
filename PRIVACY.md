@@ -11,6 +11,7 @@
 ## Network Requests
 
 The extension makes requests to:
+
 - **NASA APOD API** — to fetch astronomy pictures
 - **SIMBAD** (CDS, Strasbourg) — to enrich astronomical data
 - **Your configured backend** (default: `space-image-of-the-day-backend.vercel.app`) — to proxy and cache API responses

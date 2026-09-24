@@ -122,8 +122,8 @@ graph TD
 
 **Space Image of the Day** is available right now on the official browser extension stores!
 
-*   [Install for Firefox](https://addons.mozilla.org/en-US/firefox/addon/space-image-of-the-day)
-*   [Install for Chrome / Edge](#) *(Link coming soon)*
+- [Install for Firefox](https://addons.mozilla.org/en-US/firefox/addon/space-image-of-the-day)
+- [Install for Chrome / Edge](#) _(Link coming soon)_
 
 ### Try it Locally
 

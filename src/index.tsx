@@ -8,9 +8,12 @@ import { ApodProvider, useApod } from './context/ApodContext';
 import { StarField } from './Components/Discovery/StarField';
 import { ApodDisplay } from './Components/Discovery/ApodDisplay';
 
-const Gallery = React.lazy(() => import('./Components/Gallery/Gallery').then(m => ({ default: m.Gallery })));
-const StarMapOverlay = React.lazy(() => import('./Components/Discovery/StarMapOverlay').then(m => ({ default: m.StarMapOverlay })));
-
+const Gallery = React.lazy(() =>
+  import('./Components/Gallery/Gallery').then((m) => ({ default: m.Gallery })),
+);
+const StarMapOverlay = React.lazy(() =>
+  import('./Components/Discovery/StarMapOverlay').then((m) => ({ default: m.StarMapOverlay })),
+);
 
 const App: React.FC = () => {
   const { viewMode, setViewMode, isStarMapOpen, closeStarMap } = useApod();
@@ -19,7 +22,13 @@ const App: React.FC = () => {
     <div className="relative w-full h-full min-h-screen">
       <StarField />
       <main className="relative z-10 w-full min-h-screen">
-        <React.Suspense fallback={<div className="absolute inset-0 flex items-center justify-center text-white/40 font-mono text-sm">Loading...</div>}>
+        <React.Suspense
+          fallback={
+            <div className="absolute inset-0 flex items-center justify-center text-white/40 font-mono text-sm">
+              Loading...
+            </div>
+          }
+        >
           <AnimatePresence mode="wait">
             {viewMode === 'apod' ? (
               <motion.div

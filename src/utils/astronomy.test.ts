@@ -1,15 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  julianDate,
-  greenwichSiderealTime,
-  localSiderealTime,
-  equatorialToAltAz,
-  getVisibleStars,
-  projectToSky,
-  planetPosition,
-  resolveObserver,
   altitudeOf,
   DEFAULT_OBSERVER,
+  equatorialToAltAz,
+  getVisibleStars,
+  greenwichSiderealTime,
+  julianDate,
+  localSiderealTime,
+  planetPosition,
+  projectToSky,
+  resolveObserver,
 } from './astronomy';
 
 const J2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));

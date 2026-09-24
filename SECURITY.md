@@ -10,13 +10,14 @@
 ## Data & Privacy Declaration
 
 I take full responsibility for the security and integrity of this extension. As the sole developer, I guarantee that **Space Image of the Day**:
+
 - **Does not** collect, store, or transmit any user data, browsing history, or analytics.
 - **Does not** use any malicious code, third-party trackers, or exploit vulnerabilities.
-- Connects exclusively to the official NASA APOD API (and associated public astronomical APIs like SIMBAD) solely for the purpose of retrieving public imagery and metadata. 
+- Connects exclusively to the official NASA APOD API (and associated public astronomical APIs like SIMBAD) solely for the purpose of retrieving public imagery and metadata.
 
 ## Reporting a Vulnerability
 
-If you discover any security-related issues or have privacy concerns, please report them directly to the repository owner. 
+If you discover any security-related issues or have privacy concerns, please report them directly to the repository owner.
 
 **Contact Email:** [tarekulrifat142@gmail.com](mailto:tarekulrifat142@gmail.com)
 

@@ -45,6 +45,7 @@ bun run test:watch  # Watch mode
 We welcome community contributions to expand our celestial catalog (Messier/NGC deep sky targets, constellations, bright stars, and planets).
 
 To contribute a new object:
+
 1. Open `src/data/catalog.ts` (and backend equivalent `backend/src/app/modules/catalog/catalog.data.ts`).
 2. Add an entry matching the `CosmicObject` interface:
    ```typescript
@@ -62,4 +63,3 @@ To contribute a new object:
    }
    ```
 3. Run `npm test` to ensure search index and catalog matching tests pass cleanly.
-

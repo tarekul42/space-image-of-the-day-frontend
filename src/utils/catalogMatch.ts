@@ -5,7 +5,7 @@
  * whose name or aliases appear in the text, so "This Week in Space" and the
  * detail view can highlight the *actual* objects on the live star map.
  */
-import { CosmicObject, COSMIC_CATALOG } from '../data/catalog';
+import { COSMIC_CATALOG, CosmicObject } from '../data/catalog';
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
