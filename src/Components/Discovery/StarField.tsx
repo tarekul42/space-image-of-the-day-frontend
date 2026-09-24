@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import type { CSSProperties } from 'react';
 
 export const StarField: React.FC = () => {
   const stars = useMemo(
@@ -18,22 +18,19 @@ export const StarField: React.FC = () => {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0c]">
       {stars.map((star) => (
-        <motion.div
+        <div
           key={star.id}
-          initial={{ opacity: 0.2 }}
-          animate={{ opacity: [0.2, 1, 0.2] }}
-          transition={{
-            duration: star.duration,
-            repeat: Infinity,
-            delay: star.delay,
-          }}
-          className="absolute bg-white rounded-full"
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-          }}
+          className="star-field__star absolute bg-white rounded-full"
+          style={
+            {
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              '--twinkle-duration': `${star.duration}s`,
+              '--twinkle-delay': `${star.delay}s`,
+            } as CSSProperties
+          }
         />
       ))}
     </div>

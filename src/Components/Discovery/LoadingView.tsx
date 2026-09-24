@@ -1,8 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export const LoadingView: React.FC = () => (
-  <motion.div
+  <m.div
     key="loader"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -13,5 +13,5 @@ export const LoadingView: React.FC = () => (
     <p className="mt-4 text-blue-400/80 text-[10px] font-bold tracking-[0.3em] uppercase animate-pulse">
       Analyzing Sector
     </p>
-  </motion.div>
+  </m.div>
 );

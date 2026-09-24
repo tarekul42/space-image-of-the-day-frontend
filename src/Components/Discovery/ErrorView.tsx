@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { GlassCard } from '../UI/GlassCard';
 import { CosmicButton } from '../UI/CosmicButton';
@@ -10,7 +10,7 @@ interface ErrorViewProps {
 }
 
 export const ErrorView: React.FC<ErrorViewProps> = ({ error, onRetry }) => (
-  <motion.div
+  <m.div
     key="error"
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -35,5 +35,5 @@ export const ErrorView: React.FC<ErrorViewProps> = ({ error, onRetry }) => (
         Retry Connection
       </CosmicButton>
     </GlassCard>
-  </motion.div>
+  </m.div>
 );

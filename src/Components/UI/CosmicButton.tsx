@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import type { HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/utils/cn';
 
@@ -29,7 +29,7 @@ export const CosmicButton: React.FC<CosmicButtonProps> = ({
   };
 
   return (
-    <motion.button
+    <m.button
       whileHover={{ scale: 1.05, y: -2 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
@@ -41,6 +41,6 @@ export const CosmicButton: React.FC<CosmicButtonProps> = ({
       {...props}
     >
       {children}
-    </motion.button>
+    </m.button>
   );
 };

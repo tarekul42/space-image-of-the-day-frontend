@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ApodData } from '../../types/apod';
 import { StarField } from './StarField';
 import { getImageBlob } from '../../utils/storage';
@@ -105,7 +105,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
       <StarField />
       <AnimatePresence>
         {isReady && imgUrl && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -128,7 +128,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
                 loading="eager"
               />
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

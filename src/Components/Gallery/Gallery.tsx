@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   ArrowLeft,
   Calendar,
@@ -119,7 +119,7 @@ export const Gallery: React.FC = () => {
   };
 
   const renderCard = (item: ApodData, index: number, showRemove?: boolean) => (
-    <motion.button
+    <m.button
       key={item.date}
       onClick={() => selectApod(item)}
       initial={{ opacity: 0, y: 20 }}
@@ -164,7 +164,7 @@ export const Gallery: React.FC = () => {
           </span>
         )}
       </div>
-    </motion.button>
+    </m.button>
   );
 
   const favoriteCount = favorites.length;
@@ -172,7 +172,7 @@ export const Gallery: React.FC = () => {
   return (
     <div className="absolute inset-0 w-full h-full overflow-y-auto custom-scrollbar theme-bg">
       <div className="px-6 py-8 md:py-12 md:px-10 max-w-6xl mx-auto">
-        <motion.button
+        <m.button
           onClick={() => setViewMode('apod')}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -180,13 +180,9 @@ export const Gallery: React.FC = () => {
         >
           <ArrowLeft className="w-4 h-4" />
           Back to cosmos
-        </motion.button>
+        </m.button>
 
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+        <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h1 className="text-3xl md:text-5xl font-bold text-glow text-white">
             {tab === 'week' ? 'This Week in Space' : 'Sorted Objects'}
           </h1>
@@ -200,7 +196,7 @@ export const Gallery: React.FC = () => {
               <WifiOff className="w-3.5 h-3.5" /> Showing cached images — you're offline
             </p>
           )}
-        </motion.div>
+        </m.div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-2">

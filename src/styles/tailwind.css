@@ -26,6 +26,31 @@
   .text-glow {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
   }
+
+  /* Compositor-driven twinkle (no JS animation loop per star). */
+  .star-field__star {
+    opacity: 0.2;
+    animation: twinkle var(--twinkle-duration, 3s) ease-in-out infinite;
+    animation-delay: var(--twinkle-delay, 0s);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Honor the OS-level reduced-motion preference as well as the app setting. */
+@media (prefers-reduced-motion: reduce) {
+  .star-field__star {
+    animation: none;
+    opacity: 0.6;
+  }
 }
 
 /* ─── Accessibility overrides (applied via body class) ─────────── */

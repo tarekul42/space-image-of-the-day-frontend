@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useApod } from '../../context/ApodContext';
 import { LoadingView } from './LoadingView';
 import { ErrorView } from './ErrorView';
@@ -25,7 +25,7 @@ export const ApodDisplay: React.FC = () => {
     <div className="absolute inset-0 w-full h-full overflow-hidden">
       <OnboardingOverlay />
 
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="wait">
         {error ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50">
             <ErrorView error={error} onRetry={() => fetchApod()} />
@@ -36,7 +36,7 @@ export const ApodDisplay: React.FC = () => {
           </div>
         ) : (
           apod && (
-            <motion.div
+            <m.div
               key={apod.date}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -49,7 +49,7 @@ export const ApodDisplay: React.FC = () => {
               {/* Subtle loading indicator for background updates (like translations) */}
               {loading && (
                 <div className="absolute top-6 right-20 z-[60]">
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="w-4 h-4 border-2 border-blue-500/50 border-t-blue-500 rounded-full animate-spin"
@@ -76,7 +76,7 @@ export const ApodDisplay: React.FC = () => {
                 apod={apod}
                 onLocateOnMap={(objects: CosmicObject[]) => openStarMap(objects)}
               />
-            </motion.div>
+            </m.div>
           )
         )}
       </AnimatePresence>

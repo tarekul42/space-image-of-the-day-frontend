@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '@/utils/cn';
 
 interface GlassCardProps {
@@ -25,12 +25,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({ children, className, anima
   if (!animate) return content;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       {content}
-    </motion.div>
+    </m.div>
   );
 };

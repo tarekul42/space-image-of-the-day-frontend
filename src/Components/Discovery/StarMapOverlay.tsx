@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity } from 'd3-zoom';
 import { stars, constellations } from '../../data/celestial';
@@ -305,7 +305,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           ref={overlayRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -365,7 +365,7 @@ export const StarMapOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> 
               <p className="text-blue-300/60 text-[10px] font-mono mt-0.5">{tooltip.subtitle}</p>
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

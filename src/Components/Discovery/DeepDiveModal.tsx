@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { X, ExternalLink, Compass, Star, Eye, Layers, Sparkles } from 'lucide-react';
 import { ApodData } from '../../types/apod';
 import { COSMIC_CATALOG, CosmicObject } from '../../data/catalog';
@@ -52,7 +52,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/75 backdrop-blur-xl overflow-y-auto custom-scrollbar">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -261,7 +261,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
               </div>
             </div>
           </GlassCard>
-        </motion.div>
+        </m.div>
       </div>
     </AnimatePresence>
   );

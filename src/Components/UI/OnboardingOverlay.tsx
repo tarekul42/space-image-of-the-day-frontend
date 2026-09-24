@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Sparkles, Orbit } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { CosmicButton } from './CosmicButton';
@@ -44,7 +44,7 @@ export const OnboardingOverlay: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/85 backdrop-blur-2xl">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -52,14 +52,14 @@ export const OnboardingOverlay: React.FC = () => {
             className="w-full max-w-lg text-center"
           >
             <GlassCard className="p-8 md:p-10 border-cyan-500/20 bg-slate-950/80 shadow-[0_0_80px_rgba(6,182,212,0.15)] flex flex-col items-center">
-              <motion.div
+              <m.div
                 initial={{ rotate: 0 }}
                 animate={{ rotate: 360 }}
                 transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
                 className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"
               >
                 <Orbit size={32} />
-              </motion.div>
+              </m.div>
 
               <div className="flex items-center justify-center gap-2 text-cyan-400 text-xs font-bold tracking-[0.25em] uppercase mb-2">
                 <Sparkles size={14} />
@@ -82,7 +82,7 @@ export const OnboardingOverlay: React.FC = () => {
                 Begin Cosmic Exploration
               </CosmicButton>
             </GlassCard>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion';
 import { GalleryVertical } from 'lucide-react';
 import './styles/tailwind.css';
 import './styles/theme.css';
@@ -29,29 +29,31 @@ const App: React.FC = () => {
             </div>
           }
         >
-          <AnimatePresence mode="wait">
-            {viewMode === 'apod' ? (
-              <motion.div
-                key="apod"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0"
-              >
-                <ApodDisplay />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="gallery"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0"
-              >
-                <Gallery />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <LazyMotion features={domAnimation} strict>
+            <AnimatePresence mode="wait">
+              {viewMode === 'apod' ? (
+                <m.div
+                  key="apod"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0"
+                >
+                  <ApodDisplay />
+                </m.div>
+              ) : (
+                <m.div
+                  key="gallery"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0"
+                >
+                  <Gallery />
+                </m.div>
+              )}
+            </AnimatePresence>
+          </LazyMotion>
         </React.Suspense>
 
         {viewMode === 'apod' && (

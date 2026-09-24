@@ -3,7 +3,7 @@ import { Telescope, Download, Info, X, Map, Heart, Compass } from 'lucide-react'
 import { ApodData } from '../../types/apod';
 import { GlassCard } from '../UI/GlassCard';
 import { CosmicButton } from '../UI/CosmicButton';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useApod } from '../../context/ApodContext';
 
 interface InfoSectionProps {
@@ -32,7 +32,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
             Cosmic Discovery
           </div>
           <AnimatePresence mode="wait">
-            <motion.h1
+            <m.h1
               key={apod.title}
               initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
@@ -40,7 +40,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
               className="text-xl font-bold tracking-tight leading-tight line-clamp-2"
             >
               {apod.title}
-            </motion.h1>
+            </m.h1>
           </AnimatePresence>
         </div>
 
@@ -55,7 +55,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
 
       <AnimatePresence>
         {showDetails && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -63,7 +63,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
           >
             <div className="pt-2 border-t border-white/5">
               <AnimatePresence mode="wait">
-                <motion.p
+                <m.p
                   key={apod.explanation}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -71,7 +71,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
                   className="text-white/70 text-xs leading-relaxed max-h-48 overflow-y-auto pr-2 custom-scrollbar"
                 >
                   {apod.explanation}
-                </motion.p>
+                </m.p>
               </AnimatePresence>
             </div>
 
@@ -87,7 +87,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
                 </span>
               )}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
