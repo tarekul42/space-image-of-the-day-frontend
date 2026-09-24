@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import { ApodData } from '../../types/apod';
-import { StarField } from './StarField';
 import { getImageBlob } from '../../utils/storage';
 import { isSaveData } from '../../utils/http';
+import { pickDisplayUrl } from '../../utils/media';
 import { MIN_IMAGE_WIDTH, MIN_IMAGE_HEIGHT } from '../../constants';
 
 interface MediaSectionProps {
   apod: ApodData;
-}
-
-/** Standard-res url is far lighter than hdurl; prefer it on data-saver. */
-function pickDisplayUrl(apod: ApodData): string {
-  if (isSaveData()) return apod.url || apod.hdurl || '';
-  return apod.hdurl || apod.url || '';
 }
 
 export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
@@ -33,7 +27,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
         return;
       }
 
-      const remoteUrl = pickDisplayUrl(apod);
+      const remoteUrl = pickDisplayUrl(apod, isSaveData());
 
       try {
         // 1. Try to get blob from IndexedDB
@@ -102,7 +96,6 @@ export const MediaSection: React.FC<MediaSectionProps> = ({ apod }) => {
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
-      <StarField />
       <AnimatePresence>
         {isReady && imgUrl && (
           <m.div
