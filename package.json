@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tailwindcss/vite": "4.0.0-beta.8",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/chrome": "^0.3.7",
     "@types/d3-selection": "^3.0.12",
     "@types/d3-zoom": "^3.0.9",
@@ -44,7 +44,7 @@
     "globals": "^17.14.0",
     "postcss": "^8.5.33",
     "prettier": "^3.10.1",
-    "tailwindcss": "4.0.0-beta.8",
+    "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^6.4.6",
