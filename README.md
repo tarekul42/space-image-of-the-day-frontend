@@ -94,7 +94,7 @@ Now, every time I open a tab, I'm not just seeing a website. I'm taking a 2-seco
 | Layer             | Technology                                                                  | Purpose                                    |
 | ----------------- | --------------------------------------------------------------------------- | ------------------------------------------ |
 | **Core**          | [React 19](https://react.dev/)                                              | Modern component-driven UI                 |
-| **Build Tool**    | [Vite 6](https://vitejs.dev/) + [Bun](https://bun.sh/)                      | Blazing fast bundling & execution          |
+| **Build Tool**    | [Vite 8](https://vitejs.dev/) + [Bun](https://bun.sh/)                      | Blazing fast bundling & execution          |
 | **Styling**       | [Tailwind CSS v4](https://tailwindcss.com/)                                 | Next-gen utility-first styling             |
 | **Animations**    | [Framer Motion](https://www.framer.com/motion/)                             | Smooth transitions & UI micro-interactions |
 | **Cross-Browser** | [webextension-polyfill](https://github.com/mozilla/webextension-polyfill)   | Unified support for Firefox & Chrome       |
