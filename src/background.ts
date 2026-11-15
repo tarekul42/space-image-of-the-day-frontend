@@ -38,64 +38,69 @@ const PROBE_RETRY_DELAY_MS = 250;
 
 const SEED_APODS: ApodData[] = [
   {
-    date: '2023-02-14',
-    title: 'The Heart Nebula (IC 1805)',
+    date: '2026-11-15',
+    title: 'Leonid Meteors Through Orion',
     explanation:
-      'The Heart Nebula is an emission nebula in the constellation Cassiopeia. It shows glowing ionized hydrogen gas and darker dust lanes.',
-    url: 'https://apod.nasa.gov/apod/image/2302/HeartSoul_deHaro_1080.jpg',
-    hdurl: 'https://apod.nasa.gov/apod/image/2302/HeartSoul_deHaro_1977.jpg',
+      'Where will the next meteor appear? Even during a meteor shower, it is practically impossible to know. Therefore, a good way to enjoy a meteor shower is to find a place where you can sit comfortably and monitor a great expanse of dark sky. And it may be satisfying to share this experience with a friend. The meteor shower depicted was the 2022 Leonids and the view is from Hainan, China looking out over the South China Sea. Meteor streaks captured over a few hours were isolated and added to a foreground image recorded earlier. Leonid meteor streaks trace back to the constellation of Leo and were here seen streaking across the constellation of Orion. The bright red planet Mars appears near the top of the image. The Leonids peak in mid-November every year and so will peak again this week. Bonding over their love of astronomy, the two pictured meteor enthusiasts, shown celebrating their common birthday this month, were later married.',
+    url: 'https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/november/Leonids2022_Hongyang_2880.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg',
+    hdurl:
+      'https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Leonids2022_Hongyang_2880.jpg?w=2880&h=3600&fit=clip',
     media_type: 'image',
-    object_type: 'Nebula',
-    width: 2000,
-    height: 1600,
+    object_type: 'Meteor Shower',
+    width: 1024,
+    height: 1280,
   },
   {
-    date: '2018-05-04',
-    title: 'The View Toward M101',
+    date: '2026-11-13',
+    title: 'NGC 206 and the Star Clouds of Andromeda',
     explanation:
-      "Big, beautiful spiral galaxy M101 is one of the last entries in Charles Messier's famous catalog. Spanning about 170,000 light-years, this galaxy is enormous, almost twice the size of our own Milky Way Galaxy. It is located in the northern constellation Ursa Major, about 25 million light-years away.",
-    url: 'https://apod.nasa.gov/apod/image/1805/M101_3Days_New_APOD.jpg',
-    hdurl: 'https://apod.nasa.gov/apod/image/1805/M101_3Days_New_APOD.jpg',
+      "The large stellar association cataloged as NGC 206 is nestled within the dusty arms of the neighboring Andromeda galaxy along with the galaxy's pinkish star-forming regions. Also known as M31, the spiral galaxy is a mere 2.5 million light-years away. NGC 206 is found at the center of this sharp and detailed close-up of the southwestern extent of Andromeda's disk. The bright, blue stars of NGC 206 indicate its youth. In fact, its youngest massive stars are less than 10 million years old. Much larger than the open or galactic clusters of young stars in the disk of our Milky Way galaxy, NGC 206 spans about 4,000 light-years. That's comparable in size to the giant stellar nurseries NGC 604 in nearby spiral M33 and the Tarantula Nebula in the Large Magellanic Cloud.",
+    url: 'https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/november/Andromeda_closeupCruz4096.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg',
+    hdurl:
+      'https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Andromeda_closeupCruz4096.jpg?w=4096&h=2902&fit=clip',
     media_type: 'image',
     object_type: 'Galaxy',
     width: 1280,
-    height: 1045,
+    height: 906,
   },
   {
-    date: '2024-06-07',
-    title: 'Sharpless 308: Star Bubble',
+    date: '2026-11-11',
+    title: 'NGC 4449: Small Galaxy, Big Impact',
     explanation:
-      'Blown by fast winds from a hot, massive star, this cosmic bubble is much larger than the dolphin it sometimes resembles. Cataloged as Sharpless 2-308, it lies some 5,000 light-years away towards the constellation of the Great Dog (Canis Major) and covers slightly more of the sky than a Full Moon.',
-    url: 'https://apod.nasa.gov/apod/image/2406/DolphinNebulaHOO_2048.jpg',
-    hdurl: 'https://apod.nasa.gov/apod/image/2406/DolphinNebulaHOO_2048.jpg',
-    media_type: 'image',
-    object_type: 'Nebula',
-    width: 1280,
-    height: 960,
-  },
-  {
-    date: '2020-05-25',
-    title: 'Mystic Mountain Monster Being Destroyed',
-    explanation:
-      'It is a pillar of gas and dust that measures some three light-years across and is located in the Carina Nebula. The "monster" is being destroyed by the intense radiation and stellar winds of the massive newborn stars surrounding it. Inside the opaque dust, young stars fire off jets of gas that stream out from the peaks.',
-    url: 'https://apod.nasa.gov/apod/image/2005/MysticPillar_HubbleSchmidt_1433.jpg',
-    hdurl: 'https://apod.nasa.gov/apod/image/2005/MysticPillar_HubbleSchmidt_1433.jpg',
-    media_type: 'image',
-    object_type: 'Nebula',
-    width: 1280,
-    height: 1024,
-  },
-  {
-    date: '2022-06-13',
-    title: 'The Whirlpool Galaxy (M51)',
-    explanation:
-      'The Whirlpool Galaxy is a classic spiral galaxy. At only 30 million light years distant and fully 60 thousand light years across, M51 is one of the brightest and most picturesque galaxies on the sky. Its striking spiral structure is thought to be due to its gravitational interaction with the smaller galaxy on the image left.',
-    url: 'https://apod.nasa.gov/apod/image/2206/M51_HubbleMiller_5688.jpg',
-    hdurl: 'https://apod.nasa.gov/apod/image/2206/M51_HubbleMiller_5688.jpg',
+      'Don’t judge a galaxy by its size. Our home galaxy, the Milky Way, is about 100,000 light years across. This huge expanse of space contains hundreds of billions of stars! The smallest galaxies, called dwarf galaxies, are about 1/10th the size of the Milky Way and only contain a few billion stars. They are also the most common type of galaxy in the whole universe. Today’s image shows one such dwarf galaxy, NGC 4449, captured by the Hubble Space Telescope. NGC 4449 and similar dwarf galaxies are missing more oxygen than models predict. This suggests their stellar winds and supernovae are surprisingly effective at blowing away oxygen and other heavy elements. Turns out these tiny galaxies may play a big role in spreading heavy elements — the building blocks of stars, planets, and life — throughout the universe!',
+    url: 'https://assets.science.nasa.gov/content/dam/science/missions/hubble/galaxies/irregular/NGC%204449.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg',
+    hdurl:
+      'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/galaxies/irregular/NGC%204449.jpg?w=2048&h=1320&fit=clip',
     media_type: 'image',
     object_type: 'Galaxy',
     width: 1280,
-    height: 800,
+    height: 825,
+  },
+  {
+    date: '2026-11-10',
+    title: 'Saturn Behind the Moon',
+    explanation:
+      "Sometimes Saturn disappears. It doesn't really go away, of course -- it just disappears from our view when Earth's Moon moves in front. Such a Saturnian eclipse, more formally called an occultation, was visible in early 2025 along a small swath of Earth -- from Greenland through central Europe and into northern Africa. The featured image is a digital fusion of three images, the first of just Saturn before it disappeared, and then two more of the Moon with different exposure lengths. The images were taken from Sardinia, Italy, after sunset. The bright dot near Saturn is not a moon of Saturn, but rather the star 85 Aquarii, which is further behind Saturn than Saturn is behind the Moon. The next time the Moon moves in front of Saturn, as visible from some place on Earth, will be in 2031.",
+    url: 'https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/november/Moonsaturn6_Ortu_2124.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg',
+    hdurl:
+      'https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Moonsaturn6_Ortu_2124.jpg?w=2124&h=1582&fit=clip',
+    media_type: 'image',
+    object_type: 'Planet',
+    width: 1280,
+    height: 953,
+  },
+  {
+    date: '2026-11-09',
+    title: 'Rigel and the Witch Head Nebula',
+    explanation:
+      "Does the blue nebula look like the head of a witch? The nebula is known popularly as the Witch Head Nebula because, it is said, the nebula's shape resembles a Halloween-style caricature of a witch's head. Exactly how, though, can be a topic of imaginative speculation. What is clear is that IC 2118 is about 50 light-years across and made of gas and dust that points to -- because it has been partly eroded by -- the nearby star Rigel. One of the brighter stars in the constellation Orion, Rigel lies just below the center of the featured image. The blue color of the Witch Head Nebula and is caused not only by Rigel's intense blue starlight but also because the dust grains scatter blue light more efficiently than red. The same physical process causes Earth's daytime sky to appear blue, although the scatterers in planet Earth's atmosphere are molecules of nitrogen and oxygen.",
+    url: 'https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/november/WitchHead_Czerski_3000.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg',
+    hdurl:
+      'https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/WitchHead_Czerski_3000.jpg?w=3000&h=1990&fit=clip',
+    media_type: 'image',
+    object_type: 'Nebula',
+    width: 1280,
+    height: 849,
   },
 ];
 
@@ -111,10 +116,35 @@ async function keepAlive(): Promise<void> {
   }
 }
 
+/** True when the first bytes look like a raster image the <img> tag can render. */
+async function hasImageSignature(blob: Blob): Promise<boolean> {
+  const bytes = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+  const ascii = (start: number, end: number) =>
+    String.fromCharCode(...bytes.subarray(start, Math.min(end, bytes.length)));
+
+  // JPEG, PNG, GIF, BMP
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return true;
+  if (bytes[0] === 0x89 && ascii(1, 4) === 'PNG' && bytes[4] === 0x0d && bytes[5] === 0x0a)
+    return true;
+  if (ascii(0, 4) === 'GIF8') return true;
+  if (ascii(0, 2) === 'BM') return true;
+
+  // WebP: RIFF....WEBP
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return true;
+
+  // AVIF / HEIC: ....ftyp<brand>
+  if (ascii(4, 8) === 'ftyp') return true;
+
+  return false;
+}
+
 /**
  * Probe the pixel dimensions of an image URL and return the Blob.
  * Aborts after IMAGE_DOWNLOAD_TIMEOUT_MS so a hung server cannot pin
  * the service worker or bleed the user's bandwidth forever.
+ *
+ * Also rejects HTML/JSON payloads: the old apod.nasa.gov URLs now redirect
+ * to a 200 HTML page, which previously ended up cached as if it were an image.
  */
 async function getImageData(
   url: string,
@@ -124,8 +154,13 @@ async function getImageData(
     await keepAlive();
     const response = await fetchWithTimeout(url, {}, timeoutMs);
     if (!response.ok) return null;
+
+    const contentType = (response.headers.get('content-type') ?? '').toLowerCase();
+    if (contentType.includes('text/html') || contentType.includes('application/json')) return null;
+
     const blob = await response.blob();
     if (blob.size <= 1024) return null;
+    if (!(await hasImageSignature(blob))) return null;
     await keepAlive();
 
     try {

@@ -109,7 +109,7 @@ graph TD
     UI[React 19 UI] -- sendMessage --> SW[Service Worker background.ts]
     SW -- fetch/enrich --> BE[Backend Proxy / SIMBAD]
     BE -- JSON --> SW
-    SW -- fetch blob --> NASA[NASA API / CDN]
+    SW -- fetch blob --> NASA[NASA Science image CDN]
     NASA -- Image Blob --> SW
     SW -- store --> IDB[(IndexedDB Blobs)]
     SW -- store metadata --> CSS[(chrome.storage.local)]
