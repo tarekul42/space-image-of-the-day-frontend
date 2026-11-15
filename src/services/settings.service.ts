@@ -29,8 +29,7 @@ function readLegacy(): PartialSettings {
 
 export async function getSettings(): Promise<Settings> {
   const stored = (await browser.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY] as
-    | PartialSettings
-    | undefined;
+    PartialSettings | undefined;
   const legacy = readLegacy();
   const settings = mergeSettings(DEFAULT_SETTINGS, { ...legacy, ...stored });
 

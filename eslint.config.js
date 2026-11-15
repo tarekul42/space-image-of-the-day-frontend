@@ -15,6 +15,7 @@ export default tseslint.config(
       '**/dist-firefox/**',
       '**/dist-chrome/**',
       '**/.qodo/**',
+      '**/.kilo/**',
     ],
   },
   eslint.configs.recommended,
